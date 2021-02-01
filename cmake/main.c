@@ -1,6 +1,6 @@
 #include "foo.h"
 
-extern int sv;
+extern "C" int sv;
 
 int main() {
     if(sv > 0)
