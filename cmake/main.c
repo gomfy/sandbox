@@ -1,6 +1,7 @@
-#include "foo.h"
+#include <stdio.h>
 
-extern "C" int sv;
+extern void foo();
+extern int sv;
 
 int main() {
     if(sv > 0)
