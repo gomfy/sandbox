@@ -9,3 +9,7 @@ endforeach()
 add_executable(main
     ${SOURCES})
 
+if(MSVC)
+
+endif()
+
