@@ -1,3 +1,5 @@
+#include "foo.h"
+
 int sv = 10;
 
 void foo() {
