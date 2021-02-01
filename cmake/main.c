@@ -4,6 +4,7 @@ extern void foo();
 extern int sv;
 
 int main() {
-    foo();
+    if(sv)
+        foo();
     return 0;
 }
