@@ -1,6 +1,6 @@
 project(test)
 
-set(SOURCES main.c foo.c)
+set(SOURCES foo.c)
 set(BINNAME main)
 
 foreach(f ${SOURCES})
@@ -8,7 +8,8 @@ foreach(f ${SOURCES})
 endforeach()
 
 add_executable(${BINNAME}
-    ${SOURCES})
+	main.c
+	${SOURCES})
 
 if(MSVC)
 	target_compile_definitions(${BINNAME} PRIVATE MSpc)
