@@ -1,3 +1,5 @@
 #include <stdio.h>
 
-void foo(); 
+extern "C" {
+    void foo(); 
+}

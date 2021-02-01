@@ -1,5 +1,6 @@
-#include "foo.h"
+#include <stdio.h>
 
+extern void foo();
 extern int sv;
 
 int main() {
