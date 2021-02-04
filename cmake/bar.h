@@ -1,5 +1,5 @@
 #include <stdio.h>
 
 extern "C" {
-	void foo(); 
+	void bar(int x);
 }

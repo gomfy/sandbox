@@ -1,7 +1,7 @@
 #include "foo.h"
 
-int sv = 10;
+extern "C" int g1 = 10;
 
 void foo() {
-    printf("\nThe value of global variable sv is:%d\n", sv);
+    printf("\nThe value of global variable sv is:%d\n", g1);
 }

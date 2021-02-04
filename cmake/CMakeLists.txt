@@ -1,6 +1,9 @@
 project(test)
 
-set(SOURCES foo.c)
+set(SOURCES 
+	foo.c 
+	bar.c)
+
 set(BINNAME main)
 
 foreach(f ${SOURCES})
