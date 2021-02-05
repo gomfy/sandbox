@@ -1,7 +1,7 @@
 project(test)
 
 set(SOURCES 
-	foo.c 
+	foo.c
 	bar.c)
 
 set(BINNAME main)

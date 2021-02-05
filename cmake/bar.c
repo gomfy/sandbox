@@ -1,6 +1,6 @@
 #include "bar.h"
 
-extern int g1;
+extern "C" int g1;
 
 void bar(int x) {
 	if(x<g1) {
