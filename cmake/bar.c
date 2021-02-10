@@ -1,6 +1,11 @@
 #include "bar.h"
 
-extern int g1;
+extern "C" int g1;
+#ifdef FIX
+extern char* f1(char*);
+#else
+extern int* f1(char*);
+#endif
 
 void bar(int x) {
 	if(x<g1) {
@@ -8,5 +13,7 @@ void bar(int x) {
 	}
 	else {	
 		printf("%d is greater or equal than %d\n",x,g1);
-	}	
+	} 
+	char* p = "text";
+	f1(p);
 }

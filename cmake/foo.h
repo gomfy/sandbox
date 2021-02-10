@@ -3,3 +3,5 @@
 extern "C" {
 	void foo(); 
 }
+
+char* f1(char*);
