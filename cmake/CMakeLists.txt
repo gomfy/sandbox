@@ -1,6 +1,6 @@
 project(test)
 
-option(EXTERNC "Declare global as extern C" OFF)
+option(FIX "Declare global as extern C and declare functions properly" OFF)
 
 set(SOURCES 
 	foo.c
@@ -16,8 +16,8 @@ add_executable(${BINNAME}
 	main.c
 	${SOURCES})
 
-if(EXTERNC)
+if(FIX)
 	target_compile_definitions(${BINNAME} 
 		PRIVATE  
-		-DEXTERNCDEF)
+		-DFIX)
 endif()

@@ -1,6 +1,6 @@
 #include "foo.h"
 
-#ifdef EXTERNCDEF
+#ifdef FIX
 extern "C" int g1 = 10;
 #else
 extern int g1 = 10;
@@ -9,3 +9,8 @@ extern int g1 = 10;
 void foo() {
     printf("The value of global variable g1 is: %d\n", g1);
 }
+
+char* f1(char* cptr) {
+	return cptr;
+}
+
