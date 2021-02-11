@@ -1,0 +1,4 @@
+#!/bin/bash
+TS=$(date +%F-%H-%M-%S)
+FN="/c/Users/matya/ampl/out_files/msvc-$TS-$1.out"
+cmake --build . -v | tee $FN
