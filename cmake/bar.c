@@ -1,6 +1,11 @@
 #include "bar.h"
 
+#ifdef __cplusplus
 extern "C" int g1;
+#else
+extern int g1;
+#endif
+
 #ifdef FIX
 extern char* f1(char*);
 #else

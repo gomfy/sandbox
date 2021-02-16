@@ -1,6 +1,9 @@
-project(test)
+project(test-ampl-anomalies)
 
 option(FIX "Declare global as extern C and declare functions properly" OFF)
+option(CPLUSPLUS "Compile foo.c and bar.c as CPP sources" OFF)
+
+set(CMAKE_C_FLAGS_DEBUG "/Zi /Od /Ob0 /MDd /RTC1")
 
 set(SOURCES 
 	foo.c
@@ -8,9 +11,11 @@ set(SOURCES
 
 set(BINNAME main)
 
-foreach(f ${SOURCES})
-        set_source_files_properties(${f} PROPERTIES LANGUAGE CXX)
-endforeach()
+if(CPLUSPLUS)
+	foreach(f ${SOURCES})
+        	set_source_files_properties(${f} PROPERTIES LANGUAGE CXX)
+	endforeach()
+endif()
 
 add_executable(${BINNAME}
 	main.c
