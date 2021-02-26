@@ -26,7 +26,12 @@ jobs:
       - name: Setup actions checkout
         uses: actions/checkout@v2
 
-      - name: Build and install stm
+      - name: Check for md5
+        if: runner.os == 'macOS'
+        run: |
+            cd ampl/test_scripts/
+            md5 one.case
+        if: runner.os != 'macOS'
         run: |
             cd ampl/test_scripts/
             md5sum one.case
