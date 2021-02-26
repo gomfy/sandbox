@@ -1,5 +1,5 @@
 # Build directory
-cmake/build/
+ampl-build-anomaly/build/
 
 # Prerequisites
 *.d
