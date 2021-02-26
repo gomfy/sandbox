@@ -27,6 +27,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build and install stm
-        bash: |
+        run: |
             cd ampl/test_scripts/
             md5sum one.case
+        shell: bash {0}
