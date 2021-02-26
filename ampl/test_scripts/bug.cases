@@ -1,0 +1,3295 @@
+#!/bin/sh
+ampl_cmd=${1:-ax}
+
+echo  '1. (invalid subscript msg)'
+$ampl_cmd <<!!!
+param N integer > 0;
+param p{i in 1..N} :=  p[10];
+data;
+param N := 7;
+display p;
+!!!
+
+echo '
+2.'
+$ampl_cmd <<!!!
+param N integer > 0;
+param p{i in 1..N} default if i == 1 then 1 else i*p[i-1];
+data;
+param N := 7;
+param p := 3 7 5 22;
+display p;
+
+set A circular;
+param sp{i in 1..4} symbolic default if i == 1
+					then 'abc'
+				else if sp[i-1] in A
+					then next(sp[i-1],A)
+				else i;
+
+data; set A := 2 x y; param sp := 3 xyz;
+display sp;
+display{i in 1..4} sp[i];
+!!!
+
+echo '
+3.'
+$ampl_cmd <<!!!
+param N integer > 0;
+param p{i in 1..N} := if i == 1 then 1 else i*p[i-1];
+data;
+param N := 7;
+display p;
+
+set A circular;
+param sp{i in 1..4} symbolic := if i == 1
+					then 'abc'
+				else if sp[i-1] in A
+					then next(sp[i-1],A)
+				else i;
+
+data; set A := 2 x y;
+display sp;
+!!!
+
+echo '
+4.'
+$ampl_cmd <<!!!
+var x{i in 1..2};
+minimize zot{j in 1..3}: sum{i in 1..2} (x[i]-(i+j))^2;
+objective zot[1];
+solve;
+display x;
+!!!
+
+echo '
+5.'
+$ampl_cmd <<!!!
+model dietobj.mod;
+data dietobj.dat;
+objective total_number;
+solve;
+display total_cost,total_number;
+objective total_cost["JEWEL"];
+solve;
+display total_cost,total_number;
+!!!
+
+echo '
+6.'
+$ampl_cmd -vi1 <<!!!
+model dietobj.mod;
+data dietobj.dat;
+solve;
+display diet_min;
+drop diet_min["Q"];
+solve;
+display diet_min;
+!!!
+
+echo '
+7.'
+$ampl_cmd <<!!!
+model dietobj.mod;
+data dietobj.dat;
+drop diet_min;
+solve;
+!!!
+
+echo '
+8.'
+$ampl_cmd <<!!!
+set PROD;	  # products
+set AREA {PROD};  # market areas for each product
+param T > 0;	  # number of weeks
+
+param rate {PROD} > 0;		# tons per hour produced
+param inv0 {PROD} >= 0; 	# initial inventory
+param avail {1..T} >= 0;	# hours available in week
+param market {p in PROD, AREA[p], 1..T} >= 0;
+				# limit on tons sold in week
+
+param prodcost {PROD} >= 0;	# cost per ton produced
+param invcost {PROD} >= 0;	# carrying cost/ton of inventory
+param revenue {p in PROD, AREA[p], 1..T} >= 0;
+				# revenue per ton sold
+
+var Make {PROD,1..T} >= 0;	# tons produced
+var Inv {PROD,0..T} >= 0;	# tons inventoried
+var Sell {p in PROD, a in AREA[p], t in 1..T} >= 0, <= market[p,a,t];
+				# tons sold
+
+maximize total_profit:
+   sum {p in PROD, t in 1..T}
+      (sum {a in AREA[p]} revenue[p,a,t]*Sell[p,a,t] -
+	 prodcost[p]*Make[p,t] - invcost[p]*Inv[p,t]);
+
+	   # Total revenue less costs for all products in all weeks
+
+subject to time {t in 1..T}:
+   sum {p in PROD} (1/rate[p]) * Make[p,t] <= avail[t];
+
+	   # Total of hours used by all products
+	   # may not exceed hours available, in each week
+
+subject to initial {p in PROD}:  Inv[p,0] = inv0[p];
+
+	   # Initial inventory must equal given value
+
+subject to balance {p in PROD, t in 1..T}:
+   Make[p,t] + Inv[p,t-1] = sum {a in AREA[p]} Sell[p,a,t] + Inv[p,t];
+
+	   # Tons produced and taken from inventory
+	   # must equal tons sold and put into inventory
+data;
+param T := 4;
+
+set PROD := bands coils;
+set AREA[bands] := east north ;
+set AREA[coils] := east west export ;
+
+param avail :=	1 40  2 40  3 32  4 40 ;
+
+param rate :=  bands  200  coils  140 ;
+param inv0 :=  bands   10  coils    0 ;
+
+param prodcost :=  bands 10    coils 11 ;
+param invcost  :=  bands  2.5  coils  3 ;
+
+param revenue :=
+
+  [bands,*,*]:	 1	2      3      4 :=
+      east     25.0   26.0   27.0   27.0
+      north    26.5   27.5   28.0   28.5
+
+  [coils,*,*]:	 1     2     3	   4 :=
+      east	30    35    37	  39
+      west	29    32    33	  35
+      export	25    25    25	  28 ;
+
+param market :=
+
+  [bands,*,*]:	   1	 2     3     4 :=
+       east	2000  2000  1500  2000
+       north	4000  4000  2500  4500
+
+  [coils,*,*]:	   1	 2     3     4 :=
+       east	1000   800  1000  1100
+       west	2000  1200  2000  2300
+       export	1000   500   500   800 ;
+
+solve;
+option display_1col 0;
+display {p in PROD, a in AREA[p], t in 1..T} Sell [p,a,t];
+display {t in 1..T, p in PROD, a in AREA[p]} Sell[p,a,t];
+!!!
+
+echo '
+9.'
+$ampl_cmd <<!!!
+set ORIG;
+set DEST;
+set PROD;
+set ROUTES1 within {ORIG,DEST,PROD};
+
+data;
+
+set ORIG := GARY CLEV PITT ;
+set DEST := FRA DET LAN WIN STL FRE LAF ;
+set PROD := bands coils ;
+
+set ROUTES1 :=
+   (GARY,DET,bands) (GARY,LAN,bands) (GARY,LAN,coils) (GARY,STL,coils)
+   (GARY,LAF,coils) (CLEV,FRA,bands) (CLEV,FRA,coils)
+   (CLEV,DET,bands) (CLEV,LAN,bands) (CLEV,LAN,coils) (CLEV,WIN,coils)
+   (CLEV,STL,bands) (CLEV,STL,coils) (CLEV,LAF,coils)
+   (PITT,FRA,bands) (PITT,WIN,bands) (PITT,STL,bands) (PITT,FRE,bands) ;
+display {p in PROD}:  {i in ORIG, j in DEST: (i,j,p) in ROUTES1};
+display {p in PROD}: {(i,j,p) in ROUTES1};
+display {i in ORIG, p in PROD}:{j in DEST: (i,j,p) in ROUTES1};
+!!!
+
+echo '
+10.'
+$ampl_cmd <<!!!
+option display_1col 0;
+option display_transpose -10;
+
+#model weird.mod;
+set ORIG;
+set DEST;
+set PROD;
+
+set ROUTES within {ORIG,DEST,PROD};
+param cost {ROUTES} >= 0;
+
+data;
+
+set ORIG := GARY CLEV PITT ;
+set DEST := FRA DET LAN WIN STL FRE LAF ;
+set PROD := bands coils ;
+
+set ROUTES :=
+
+ (*,*,bands): FRA DET LAN WIN STL FRE LAF :=
+	GARY   -   -   -   -   -   -   -
+	CLEV   +   +   +   -   +   -   +
+	PITT   +   -   -   +   +   +   -
+
+ (*,*,coils): FRA DET LAN WIN STL FRE LAF :=
+	GARY   -   -   +   -   +   -   +
+	CLEV   +   +   +   +   +   -   -
+	PITT   -   -   -   -   -   +   -  ;
+
+param cost :=
+
+ [*,*,bands]: FRA DET LAN WIN STL FRE LAF :=
+	CLEV   27   9  12   .  26   .  17
+	PITT   24   .	.  13  28  99	.
+
+ [*,*,coils]: FRA DET LAN WIN STL FRE LAF :=
+	GARY	.   .  11   .  16   .	8
+	CLEV   23   8  10   9  21   .	.
+	PITT	.   .	.   .	.  81	. ;
+
+display cost;
+display {i in ORIG, j in DEST, p in PROD: (i,j,p) in ROUTES} cost[i,j,p];
+
+reset;
+#model weirdo.mod;
+set ORIG ordered;
+set DEST ordered;
+set PROD ordered;
+
+set ROUTES within {ORIG,DEST,PROD};
+param cost {ROUTES} >= 0;
+
+data;
+
+set ORIG := GARY CLEV PITT ;
+set DEST := FRA DET LAN WIN STL FRE LAF ;
+set PROD := bands coils ;
+
+set ROUTES :=
+
+ (*,*,bands): FRA DET LAN WIN STL FRE LAF :=
+	GARY   -   -   -   -   -   -   -
+	CLEV   +   +   +   -   +   -   +
+	PITT   +   -   -   +   +   +   -
+
+ (*,*,coils): FRA DET LAN WIN STL FRE LAF :=
+	GARY   -   -   +   -   +   -   +
+	CLEV   +   +   +   +   +   -   -
+	PITT   -   -   -   -   -   +   -  ;
+
+param cost :=
+
+ [*,*,bands]: FRA DET LAN WIN STL FRE LAF :=
+	CLEV   27   9  12   .  26   .  17
+	PITT   24   .	.  13  28  99	.
+
+ [*,*,coils]: FRA DET LAN WIN STL FRE LAF :=
+	GARY	.   .  11   .  16   .	8
+	CLEV   23   8  10   9  21   .	.
+	PITT	.   .	.   .	.  81	. ;
+
+display cost;
+display {i in ORIG, j in DEST, p in PROD: (i,j,p) in ROUTES} cost[i,j,p];
+!!!
+
+echo '
+11.'
+$ampl_cmd <<!!!
+model multmip1.mod
+data multmip1.dat
+option solver cplex;
+solve;
+!!!
+
+echo '
+12.'
+$ampl_cmd <<!!!
+param N;set I := 1..N;let N := 3;display I; print N;
+!!!
+
+echo '
+13.'
+$ampl_cmd <<!!!
+param N;
+var x{1..N} >= 0;
+fix_x1: x[1] = .2;
+minimize zot: sum{i in 1..N} (i/N - x[i])^2;
+let N := 4;
+solve;
+display x;
+let N := 3;
+solve;
+display x;
+!!!
+
+echo '
+14.'
+$ampl_cmd <<!!!
+solve;
+let f_max["CHK"] := 11;
+solve;
+!!!
+
+echo '
+15.'
+$ampl_cmd <<!!!
+set A;
+let A := {'a','b','c'};
+display A;
+let A := 1..3;
+display A;
+!!!
+
+echo '
+16.'
+$ampl_cmd <<!!!
+set t1 := 0..1 by .1;
+set t2 := union{i in 0..10} {i/10};
+display t1 diff t2, t1, t2;
+!!!
+
+echo '
+17.'
+$ampl_cmd -vi1 <<!!!
+set S circular;
+display{s in S} prev(s);
+data;
+set S := a b c;
+display{s in S} prev(s);
+!!!
+
+echo '
+18.'
+$ampl_cmd <<!!!
+param q{1..3};data;param q 1 2.5 2 3.5 3 4.2;
+display q;
+update data q;
+data; param q 2 7.3;
+display q;
+!!!
+
+echo '
+19.'
+$ampl_cmd <<!!!
+set SS{1..3};
+data;set SS[1] := a b c;set SS[2] := d e f;
+display SS;
+reset data SS;
+display SS;
+data;set SS[3] := x y z;
+display SS;
+!!!
+
+echo '
+20.'
+$ampl_cmd -vi1 <<!!!
+set PROD;
+var x {PROD} >= 0;
+var y {PROD} >= 1;
+subject to lim {i in PROD}: x[i] >= y[i];
+display x.lb;
+data; set PROD := 1 2 3;
+display x.lb;
+!!!
+
+echo '
+21.'
+$ampl_cmd -vi1 <<!!!
+param a {1..3};
+display a;
+data; param a := 1 111 2 222 3 333 ;
+display a;
+display a[1];
+!!!
+
+echo '
+22.'
+$ampl_cmd <<!!!
+param N > 0 integer;
+
+param ack {i in 0..N, j in 0..N} :=
+  if j = 0 then i + 1
+  else if i = 0 then ack[1,j-1]
+  else ack[ack[i-1,j],j-1];
+
+data;
+param N := 10;
+display ack[10,0];
+display ack[1,1], ack[1,2];
+!!!
+
+echo '
+23.'
+$ampl_cmd <<!!!
+display union {j in 1..5} j*2..10;
+display union {j in 1..5} j*2..10;
+!!!
+
+echo '
+24.'
+$ampl_cmd <<!!!
+param b {1..3} symbolic;
+data; param b := 1 here 2 there 3 everywhere ;
+display b;
+let b[3] := "every where";
+display b;
+let b[3] := "nowhere";
+display b;
+!!!
+
+echo '
+25.'
+$ampl_cmd <<!!!
+model dietobj.mod
+data dietobj.dat
+solve;
+display total_cost,total_number;
+objective total_cost['A&P'];
+solve;
+display total_cost,total_number;
+!!!
+
+echo '
+26.'
+$ampl_cmd <<!!!
+param T := 3;
+var x{if T == 4} >= 0;
+display x;
+!!!
+
+echo '
+27.'
+$ampl_cmd <<!!!
+var x >= 0;
+bletch{if 1 < 0}: sin(x) >= 2;
+print bletch.lb;
+!!!
+
+echo '
+28.'
+$ampl_cmd <<!!!
+var x;
+minimize zot{if 1 < 0}: (x+3)^2;
+print zot.val;
+!!!
+
+echo '
+29.'
+$ampl_cmd -vi1 <<!!!
+set S;
+param a{S};
+display a;
+var X{S} := 1;
+display X;
+data; set S := z x c v;
+display S,X;
+!!!
+
+echo '
+30.'
+$ampl_cmd -vi1 <<!!!
+set S;
+param a{S} := 42;
+display a;
+data; set S := z x c v;
+display S;
+display a;
+display a["z"];
+!!!
+
+echo '
+31.'
+$ampl_cmd <<!!!
+param p{1..3};
+let p[1] := 22;
+display p;
+data; param p 1 37 2 42 3 58;
+display p;
+!!!
+
+echo '
+32.'
+$ampl_cmd <<!!!
+# ------------------------------------------------
+# ANTI-ASSIGNMENT PROBLEM:
+# Assign people to groups
+# so that groups are as heterogeneous as possible
+# ------------------------------------------------
+# Version 1: Minimize "total overlap"
+# ------------------------------------------------
+
+# To make this problem harder,
+# decrease sample and/or increase numberGrps.
+
+set ALL_PEOPLE ordered;
+
+param sample integer > 0;
+param selection integer >= 0, < sample;
+set PEOPLE := {i in ALL_PEOPLE: ord(i) mod sample = selection};
+
+set CATEG;
+param type {ALL_PEOPLE,CATEG} symbolic;
+param typeWt {CATEG} >= 0;
+
+param numberGrps integer > 0;
+param minInGrp := floor (card(PEOPLE)/numberGrps) - 1;
+param maxInGrp := ceil (card(PEOPLE)/numberGrps) + 1;
+
+param maxOverlap {i in PEOPLE} :=
+   sum {k in CATEG} typeWt[k] * min (maxInGrp - 1,
+      card {i2 in PEOPLE diff {i}: type[i2,k] = type[i,k]});
+
+var Assign {i in PEOPLE, j in 1..numberGrps} binary;
+var Overlap {i in PEOPLE, j in 1..numberGrps} >= 0;
+
+minimize TotalOverlap:
+   sum {i in PEOPLE, j in 1..numberGrps} Overlap[i,j];
+
+subj to OverlapDefn {i in PEOPLE, j in 1..numberGrps}:
+   Overlap[i,j] >=
+      sum {k in CATEG} typeWt[k] *
+	sum {i2 in PEOPLE diff {i}: type[i2,k] = type[i,k]} Assign[i2,j]
+    - maxOverlap[i] * (1 - Assign[i,j]);
+
+subj to AssignAll {i in PEOPLE}:
+   sum {j in 1..numberGrps} Assign[i,j] = 1;
+
+subj to GroupSize {j in 1..numberGrps}:
+   minInGrp <= sum {i in PEOPLE} Assign[i,j] <= maxInGrp;
+
+# ------------------------------------------------
+# TEST DATA for assign.mod
+# All names and types are fictional
+# ------------------------------------------------
+
+data;
+
+param sample := 8;
+param selection := 0;
+
+param numberGrps := 5;
+
+set ALL_PEOPLE :=
+   BIW	 AJH   FWI   IGN   KWR	 KKI   HMN   SML   RSR	 TBR
+   KRS	 CAE   MPO   CAR   PSL	 BCG   DJA   AJT   JPY	 HWG
+   TLR	 MRL   JDS   JAE   TEN	 MKA   NMA   PAS   DLD	 SCG
+   VAA	 FTR   GCY   OGZ   SME	 KKA   MMY   API   ASA	 JLN
+   JRT	 SJO   WMS   RLN   WLB	 SGA   MRE   SDN   HAN	 JSG
+   AMR	 DHY   JMS   AGI   RHE	 BLE   SMA   BAN   JAP	 EHR
+   MES	 DHE   SWS   ACI   RJY	 TWD   MMA   JJR   MFR	 LHS
+   JAD	 CWU   PMY   CAH   SJH	 EGR   JMQ   GGH   MMH	 JWR
+   MJR	 EAZ   WAD   LVN   DHR	 ABE   LSR   MBT   AJU	 SAS
+   JRS	 RFS   TAR   DLT   HJO	 SCR   CMY   GDE   MSL	 CGS
+   HCN	 JWS   RPR   RCR   RLS	 DSF   MNA   MSR   PSY	 MET
+   DAN	 RVY   PWS   CTS   KLN	 RDN   ANV   LMN   FSM	 KWN
+   CWT	 PMO   EJD   AJS   SBK	 JWB   SNN   PST   PSZ	 AWN
+   DCN	 RGR   CPR   NHI   HKA	 VMA   DMN   KRA   CSN	 HRR
+   SWR	 LLR   AVI   RHA   KWY	 MLE   FJL   ESO   TJY	 WHF
+   TBG	 FEE   MTH   RMN   WFS	 CEH   SOL   ASO   MDI	 RGE
+   LVO	 ADS   CGH   RHD   MBM	 MRH   RGF   PSA   TTI	 HMG
+   ECA	 CFS   MKN   SBM   RCG	 JMA   EGL   UJT   ETN	 GWZ
+   MAI	 DBN   HFE   PSO   APT	 JMT   RJE   MRZ   MRK	 XYF
+   JCO	 PSN   SCS   RDL   TMN	 CGY   GMR   SER   RMS	 JEN
+   DWO	 REN   DGR   DET   FJT	 RJZ   MBY   RSN   REZ	 BLW ;
+
+param: CATEG: typeWt :=  dept 1  loc 1	rate 1	title 1 ;
+
+param type:
+
+     dept	loc	rate	title	:=
+BIW   NNE   Peoria	  A   Assistant
+KRS   WSW   Springfield   B   Assistant
+TLR   NNW   Peoria	  B   Adjunct
+VAA   NNW   Peoria	  A   Deputy
+JRT   NNE   Springfield   A   Deputy
+AMR   SSE   Peoria	  A   Deputy
+MES   NNE   Peoria	  A   Consultant
+JAD   NNE   Peoria	  A   Adjunct
+MJR   NNE   Springfield   A   Assistant
+JRS   NNE   Springfield   A   Assistant
+HCN   SSE   Peoria	  A   Deputy
+DAN   NNE   Springfield   A   Adjunct
+CWT   NNE   Springfield   A   Adjunct
+DCN   NNE   Peoria	  A   Adjunct
+SWR   WSW   Peoria	  A   Adjunct
+TBG   NNE   Springfield   A   Assistant
+LVO   NNE   Peoria	  A   Assistant
+ECA   NNE   Springfield   A   Assistant
+MAI   NNE   Peoria	  B   Adjunct
+JCO   SSE   Macomb	  A   Adjunct
+DWO   SSE   Peoria	  A   Adjunct
+AJH   NNE   Peoria	  A   Adjunct
+CAE   SSE   Peoria	  A   Adjunct
+MRL   WSW   Peoria	  A   Assistant
+FTR   NNE   Peoria	  A   Adjunct
+SJO   NNE   Peoria	  A   Adjunct
+DHY   NNE   Urbana	  A   Adjunct
+DHE   NNE   Peoria	  A   Adjunct
+CWU   NNW   Peoria	  A   Assistant
+EAZ   NNE   Peoria	  A   Assistant
+RFS   NNE   Peoria	  A   Deputy
+JWS   WSW   Peoria	  A   Adjunct
+RVY   NNE   Peoria	  A   Adjunct
+PMO   SSE   Peoria	  A   Assistant
+RGR   NNE   Peoria	  A   Assistant
+LLR   NNE   Peoria	  A   Assistant
+FEE   NNW   Springfield   A   Adjunct
+ADS   NNE   Peoria	  A   Adjunct
+CFS   NNW   Joliet	  A   Assistant
+DBN   SSE   Peoria	  A   Adjunct
+PSN   NNE   Peoria	  A   Adjunct
+REN   NNE   Peoria	  B   Adjunct
+FWI   NNW   Peoria	  A   Assistant
+MPO   SSE   Peoria	  A   Assistant
+JDS   NNW   Peoria	  A   Adjunct
+GCY   NNE   Peoria	  A   Adjunct
+WMS   NNE   Springfield   A   Deputy
+JMS   NNE   Springfield   A   Adjunct
+SWS   NNW   Springfield   A   Assistant
+PMY   NNE   Peoria	  A   Deputy
+WAD   NNE   Springfield   A   Adjunct
+TAR   NNE   Peoria	  A   Assistant
+RPR   NNE   Peoria	  A   Adjunct
+PWS   NNE   Peoria	  A   Consultant
+EJD   WSW   Peoria	  B   Adjunct
+CPR   NNE   Peoria	  A   Deputy
+AVI   NNE   Springfield   B   Adjunct
+MTH   NNE   Joliet	  A   Assistant
+CGH   NNE   Springfield   A   Adjunct
+MKN   WSW   Peoria	  A   Assistant
+HFE   NNW   Carbondale	  A   Adjunct
+SCS   NNE   Peoria	  A   Adjunct
+DGR   NNE   Springfield   A   Assistant
+IGN   NNE   Springfield   A   Assistant
+CAR   NNW   Peoria	  A   Assistant
+JAE   NNE   Springfield   A   Assistant
+OGZ   NNE   Peoria	  A   Consultant
+RLN   SSE   Peoria	  A   Adjunct
+AGI   SSE   Peoria	  A   Assistant
+ACI   NNE   Peoria	  B   Assistant
+CAH   SSE   Peoria	  B   Adjunct
+LVN   NNE   Springfield   B   Assistant
+DLT   SSE   Peoria	  B   Adjunct
+RCR   NNE   Peoria	  A   Adjunct
+CTS   NNE   Peoria	  A   Deputy
+AJS   SSE   Peoria	  A   Assistant
+NHI   NNE   Carbondale	  A   Assistant
+RHA   NNW   Carbondale	  A   Assistant
+RMN   NNE   Springfield   A   Deputy
+RHD   SSE   Peoria	  A   Assistant
+SBM   NNW   Peoria	  A   Assistant
+PSO   NNE   Peoria	  A   Adjunct
+RDL   NNW   Joliet	  A   Adjunct
+DET   NNE   Springfield   A   Assistant
+KWR   NNE   Peoria	  A   Assistant
+PSL   SSE   Peoria	  B   Assistant
+TEN   NNW   Springfield   A   Adjunct
+SME   NNE   Springfield   A   Consultant
+WLB   NNE   Peoria	  A   Adjunct
+RHE   NNE   Peoria	  A   Assistant
+RJY   SSE   Springfield   A   Deputy
+SJH   NNE   Cairo	  A   Adjunct
+DHR   SSE   Peoria	  A   Assistant
+HJO   NNE   Carbondale	  A   Assistant
+RLS   NNE   Peoria	  A   Adjunct
+KLN   WSW   Peoria	  A   Adjunct
+SBK   NNE   Cairo	  A   Adjunct
+HKA   NNE   Carbondale	  A   Adjunct
+KWY   NNE   Peoria	  A   Deputy
+WFS   NNW   Peoria	  A   Adjunct
+MBM   SSE   Peoria	  A   Assistant
+RCG   SSE   Peoria	  A   Adjunct
+APT   NNE   Peoria	  A   Adjunct
+TMN   NNE   Peoria	  A   Assistant
+FJT   WSW   Peoria	  A   Assistant
+KKI   NNE   Carbondale	  A   Adjunct
+BCG   NNE   Urbana	  A   Adjunct
+MKA   NNE   Carbondale	  A   Assistant
+KKA   NNE   Peoria	  A   Assistant
+SGA   NNW   Springfield   B   Assistant
+BLE   NNE   Peoria	  A   Assistant
+TWD   SSE   Peoria	  A   Assistant
+EGR   NNE   Peoria	  B   Adjunct
+ABE   NNW   Peoria	  A   Adjunct
+SCR   NNE   Peoria	  A   Adjunct
+DSF   NNW   Springfield   A   Adjunct
+RDN   NNE   Peoria	  A   Adjunct
+JWB   NNW   Peoria	  B   Deputy
+VMA   SSE   Peoria	  A   Adjunct
+MLE   NNE   Macomb	  A   Adjunct
+CEH   NNE   Springfield   A   Assistant
+MRH   NNE   Peoria	  A   Deputy
+JMA   NNE   Carbondale	  A   Deputy
+JMT   NNE   Peoria	  B   Assistant
+CGY   NNE   Springfield   A   Adjunct
+RJZ   NNW   Peoria	  A   Adjunct
+HMN   WSW   Springfield   B   Assistant
+DJA   NNE   Peoria	  A   Adjunct
+NMA   NNE   Carbondale	  B   Assistant
+MMY   NNE   Peoria	  A   Assistant
+MRE   NNE   Peoria	  A   Assistant
+SMA   NNE   Joliet	  A   Adjunct
+MMA   NNE   Carbondale	  A   Deputy
+JMQ   NNE   Carbondale	  B   Assistant
+LSR   NNW   Peoria	  A   Adjunct
+CMY   NNE   Peoria	  A   Adjunct
+MNA   NNE   Carbondale	  A   Adjunct
+ANV   SSE   Peoria	  A   Assistant
+SNN   NNE   Macomb	  B   Deputy
+DMN   NNW   Peoria	  A   Adjunct
+FJL   NNE   Springfield   A   Assistant
+SOL   NNE   Evansville	  A   Assistant
+RGF   NNE   Springfield   A   Adjunct
+EGL   NNE   Peoria	  A   Adjunct
+RJE   NNE   Macomb	  A   Adjunct
+GMR   NNE   Peoria	  A   Assistant
+MBY   NNE   Peoria	  B   Assistant
+SML   NNE   Springfield   A   Assistant
+AJT   NNE   Peoria	  A   Assistant
+PAS   NNE   Peoria	  A   Assistant
+API   NNE   Springfield   A   Adjunct
+SDN   NNE   Peoria	  A   Deputy
+BAN   NNE   Peoria	  A   Assistant
+JJR   SSE   Springfield   A   Adjunct
+GGH   NNW   Peoria	  A   Adjunct
+MBT   NNE   Peoria	  A   Adjunct
+GDE   NNE   Peoria	  A   Deputy
+MSR   SSE   Peoria	  A   Assistant
+LMN   NNW   Peoria	  B   Assistant
+PST   NNE   Springfield   A   Assistant
+KRA   NNE   Peoria	  A   Adjunct
+ESO   NNE   Springfield   A   Adjunct
+ASO   NNE   Carbondale	  B   Assistant
+PSA   NNE   Springfield   A   Assistant
+UJT   NNE   Springfield   A   Assistant
+MRZ   WSW   Peoria	  B   Assistant
+SER   NNW   Peoria	  A   Assistant
+RSN   NNE   Joliet	  A   Assistant
+RSR   NNW   Peoria	  A   Adjunct
+JPY   NNE   Peoria	  A   Adjunct
+DLD   NNE   Urbana	  B   Assistant
+ASA   SSE   Peoria	  A   Consultant
+HAN   SSE   Peoria	  A   Deputy
+JAP   SSE   Peoria	  A   Adjunct
+MFR   NNE   Springfield   A   Adjunct
+MMH   NNE   Joliet	  A   Adjunct
+AJU   SSE   Springfield   A   Assistant
+MSL   NNW   Springfield   A   Adjunct
+PSY   NNE   Springfield   A   Assistant
+FSM   NNE   Springfield   A   Assistant
+PSZ   SSE   Peoria	  A   Assistant
+CSN   NNE   Joliet	  A   Assistant
+TJY   WSW   Springfield   A   Adjunct
+MDI   NNE   Peoria	  A   Consultant
+TTI   NNE   Carbondale	  A   Assistant
+ETN   NNE   Peoria	  A   Assistant
+MRK   NNE   Peoria	  A   Adjunct
+RMS   NNE   Peoria	  A   Adjunct
+REZ   NNE   Evansville	  A   Adjunct
+TBR   NNE   Peoria	  A   Deputy
+HWG   NNE   Peoria	  A   Assistant
+SCG   NNW   Joliet	  A   Adjunct
+JLN   NNE   Peoria	  B   Assistant
+JSG   NNE   Peoria	  A   Deputy
+EHR   NNE   Peoria	  A   Assistant
+LHS   NNE   Peoria	  A   Adjunct
+JWR   NNE   Springfield   A   Assistant
+SAS   NNE   Peoria	  B   Adjunct
+CGS   NNE   Springfield   A   Assistant
+MET   NNE   Peoria	  B   Assistant
+KWN   WSW   Springfield   A   Assistant
+AWN   NNE   Springfield   A   Adjunct
+HRR   NNE   Macomb	  A   Adjunct
+WHF   NNE   Peoria	  A   Assistant
+RGE   SSE   Springfield   A   Adjunct
+HMG   NNE   Joliet	  B   Assistant
+GWZ   NNE   Joliet	  A   Assistant
+XYF   NNE   Peoria	  A   Assistant
+JEN   NNE   Peoria	  A   Deputy
+BLW   NNE   Peoria	  A   Deputy ;
+solve;
+!!!
+
+echo '
+33.'
+$ampl_cmd <<!!!
+#From phoenix.Princeton.EDU!bingyang Mon Dec 20 16:06:05 0500 1993
+
+# civ518 project
+# mod
+
+param N;		# number of nodes
+param L;		# number of links
+param S;		# number of scenarios
+param P;		# maximum number of proposals
+
+set NODES := {1..N};	# set of nodes
+set LINKS := {1..L};	# set of links
+set SCENS := {1..S};	# set of scenarios
+set PROPS := {1..P};	# set of porposals
+
+param t;#:=0;	  #iteration number
+
+
+# civ518 project
+# master.mod
+
+
+
+param l {LINKS} >= 0;		# lengths of links
+param p {LINKS, SCENS, PROPS};	# proposals for b
+
+var c {LINKS} >= 0;		# cross section area of links
+var lambda {SCENS, PROPS} >= 0; # weights for proposals
+
+minimize master_weights:
+	sum { i in LINKS } l[i] * c[i];
+
+
+subject to Bound { i in LINKS , j in SCENS }:
+	c[i] >= + sum { k in 1..t } p[i, j, k] * lambda[j, k];
+
+subject to Normality { j in SCENS }:
+	sum { k in 1..t } lambda[j, k] = 1;
+
+
+
+# civ518 project
+# sub.mod
+
+param FX {NODES, SCENS};	# x components of loads at nodes
+param FY {NODES, SCENS};	# y components of loads at nodes
+
+param AX {NODES, LINKS};	# cosine in x
+param AY {NODES, LINKS};	# cosine in y
+
+param pi {LINKS, SCENS};	# shadow price
+param si {SCENS};		# shadow price
+
+var x {LINKS, SCENS};		# forces in links
+var b {LINKS, SCENS} >= 0;	# bounds for each scenario
+
+minimize sub_weights:
+	sum { i in LINKS , j in SCENS } pi[i,j] * b[i,j]
+	+ sum{j in SCENS} si[j];
+
+subject to x_balance { m in NODES , j in SCENS }:
+	sum {i in LINKS} AX[m, i] * x[i, j] = - FX[m, j];
+
+subject to y_balance { m in NODES , j in SCENS }:
+	sum {i in LINKS} AY[m, i] * x[i, j] = - FY[m, j];
+
+subject to Lower_Bound { i in LINKS , j in SCENS }:
+	- x[i, j] <= b[i, j];
+
+subject to Upper_Bound { i in LINKS , j in SCENS }:
+	+ x[i, j] <= b[i, j];
+
+
+data;
+# civ518 project
+# dat
+
+param N := 2;
+param L := 5;
+param S := 2;
+param P := 5;
+
+
+
+# civ518 project
+# master.dat
+
+param t:= 0;
+
+param l :=
+	1	1
+	2	1
+	3	1
+	4	1.414
+	5	1.414
+;
+
+
+
+
+# civ518 project
+# sub.dat
+
+param FX (tr):	1	2	:=
+	1	1	0	# scenario 1
+	2	0	-1	# scenario 2
+;
+
+param FY (tr):	1	2	:=
+	1	0	0	# scenario 1
+	2	0	0	# scenario 2
+;
+
+param AX (tr):	1	2	:=
+	1	1	-1
+	2	0	0
+	3	0	0
+	4	0.707	0
+	5	0	-0.707
+;
+
+param AY (tr):	1	2	:=
+	1	0	0
+	2	-1	0
+	3	0	-1
+	4	-0.707	0
+	5	0	-0.707
+;
+
+# civ518
+# script
+
+#model mod;
+#data  dat;
+
+let t := 1;
+
+let {i in LINKS, j in SCENS, k in PROPS} p[i, j, k] := 0;
+			# initialize proposals
+
+let {i in LINKS, j in SCENS} pi[i, j] := l[i];
+let {j in SCENS} si[j] := 0;
+
+objective sub_weights;
+solve;
+
+display x;
+display b;
+
+let {i in LINKS, j in SCENS} p[i, j, t] := b[i, j];
+
+objective master_weights;
+solve;
+
+let {i in LINKS, j in SCENS} pi[i, j] := Bound[i,j];
+let {j in SCENS} si[j] := Normality[j];
+
+display pi, si;
+
+objective sub_weights;
+solve;
+
+display x;
+display b;
+
+let t:=2;
+
+let {i in LINKS, j in SCENS} p[i, j, t] := b[i, j];
+
+objective master_weights;
+solve;
+!!!
+
+echo '
+34.'
+$ampl_cmd <<!!!
+model diet.mod
+data diet.dat
+reset data;
+data diet.dat
+solve;
+!!!
+
+echo '
+35.'
+$ampl_cmd <<!!!
+var x{1..2} := 1;
+var y{1..2} >= 0  := sqrt(.5);
+circle: sum{i in 1 .. 2} y[i]^2 = 1;
+var z = x[1]*x[2]^2 + 1;
+minimize zot: (z - 5)^2 + (x[1]-2)^2;
+drop circle;
+solve;
+display x, z;
+fix y[1];
+fix x[1];
+solve;
+display x, z;
+!!!
+
+echo '
+36.'
+$ampl_cmd <<!!!
+set A ordered;
+var x{A} >= 0 <= 10;
+minimize zip: sum{i in A} ord(i)*x[i];
+var y{i in A: i != last(A)} = x[i] + x[next(i)];
+s.t. zot{i in A: i != last(A)}: y[i] = 1;
+data;
+set A := a b c d;
+solve;
+display x;
+reset data A;
+data;
+set A := g h i j;
+drop{i in {'g','h'}} zot[i];
+solve;
+display x;
+!!!
+
+echo '
+37.'
+$ampl_cmd <<!!!
+model net1node.mod;
+data net1.dat;
+solve;
+reset data;
+data net1.dat;
+solve;
+!!!
+
+echo '
+38.'
+$ampl_cmd <<!!!
+display sum {i in 1..2: 0==1} i;
+for{j in 1..3}
+	display sum{i in 1..2: j == 2} i;
+!!!
+
+echo '
+39.'
+#From idss.nwa.com!restone Fri Jun 14 18:41:59 EDT 1996
+$ampl_cmd <<!!!
+set A within Integers ;
+param b { A } symbolic in { "Y", "N" } ;
+param c { A } binary ;
+set D within A := { x in A :     ( b[x] == "Y" ) } ;
+set E within A := { x in A : not ( b[x] == "Y" ) } ;
+set F within A := { x in A :     ( c[x] ==  1  ) } ;
+set G within A := { x in A : not ( c[x] ==  1  ) } ;
+data;
+param : A : b c :=
+   1  N  0
+   2  Y  1
+   3  N  0
+   4  Y  1
+   5  N  0
+   6  Y  1
+   7  N  0
+   8  Y  1
+  ;
+display A;
+display b;
+display c;
+display D;
+display E;
+display F;
+display G;
+!!!
+
+echo '
+40.'
+$ampl_cmd <<!!!
+#From informatik.uni-koeln.de!antes Thu Oct 31 06:05:41 EST 1996
+
+set Nodes;
+set Links within Nodes cross Nodes default Nodes cross Nodes;
+
+var transport {Links} >= 0;
+
+minimize Cost{a in Nodes, b in Nodes} : transport [a, b];
+
+subject to Satisfy {a in Nodes, b in Nodes}:
+ transport [a, b] = 10;
+
+problem Sub {a in Nodes, b in Nodes}:
+  transport [a, b], Cost [a, b], Satisfy [a, b];
+
+data;
+set Nodes :=  A B C D;
+model;
+
+printf "This first loop works:\n";
+for {(a, b) in Links}
+     printf "%s %s\n", a, b;
+
+printf "this second loop including solve breaks:\n";
+for {(a, b) in Links}
+{
+  printf "%s %s\n", a, b;
+
+  solve Sub [a, b];
+
+  printf "result : %f\n", transport [a, b];
+}
+!!!
+
+echo '
+40.2'
+$ampl_cmd <<!!!
+#variation of 40.
+
+set Nodes ordered;
+set Links within Nodes cross Nodes cross Nodes default Nodes cross Nodes cross Nodes;
+
+var transport {Links} >= 0;
+
+minimize Cost{a in Nodes, b in Nodes} : transport [a, b, first(Nodes)];
+
+subject to Satisfy {a in Nodes, b in Nodes}:
+ transport [a, b, first(Nodes)] = 10;
+
+problem Sub {a in Nodes, b in Nodes}:
+  transport [a, b, first(Nodes)], Cost [a, b], Satisfy [a, b];
+
+data;
+set Nodes :=  A B C D;
+model;
+
+printf "This first loop works:\n";
+for {(a, b, c) in Links}
+     printf "%s %s %s\n", a, b, c;
+
+printf "this second loop including solve used to break:\n";
+for {(a, b, first(Nodes)) in Links}
+{
+  printf "%s %s\n", a, b;
+
+  solve Sub [a, b];
+
+  printf "result : %f\n", transport [a, b, first(Nodes)];
+
+}
+!!!
+
+echo '
+41.'
+$ampl_cmd <<!!!
+var x{i in 1..2} := i;
+function mean;
+minimize zot: mean({i in 1..2}x[i], if x[1] > 3 then 'abc' else 'def');
+option solve_exitcode_max 1024;
+solve;  # minos should complain about mean not being available,
+	# rather than ampl faulting
+option solve_exitcode_max $$solve_exitcode_max;
+!!!
+
+echo '
+42.'
+$ampl_cmd <<!!!
+set VERTEX;
+param root symbolic in VERTEX;
+param parent {VERTEX diff {root}} symbolic in VERTEX default root;
+
+param depth {i in VERTEX} :=
+  if i = root then 0
+	      else 1 + depth [parent[i]] ;
+
+# lowest common ancestor in the tree.
+param lca{i in VERTEX, j in VERTEX} symbolic in VERTEX :=
+  if i=j then i
+  else if i=root or j=root then root
+  else if depth[i]>depth[j] then lca[parent[i],j]
+  else lca[i,parent[j]] ;
+
+set lca_set{i in VERTEX, j in VERTEX} within VERTEX :=
+  if i=j then {i}
+  else if i=root or j=root then {root}
+  else if depth[i]>depth[j] then lca_set[parent[i],j]
+  else lca_set[i,parent[j]] ;
+
+data;
+param: VERTEX:  parent :=
+	1       .
+	2       1
+	3       2
+	4       5
+	5       2
+	6       5  ;
+
+param root := 1;
+display lca_set[1,1];
+!!!
+
+echo '
+43.'
+$ampl_cmd -vi1 <<!!!
+# stoch2.mod
+# ----------------------------------------
+# STOCHASTIC PROGRAMMING PROBLEM
+# USING BENDERS DECOMPOSITION
+# ----------------------------------------
+
+### SUBPROBLEM FOR EXTREME POINT ###
+
+set PROD;     # products
+param T > 0;  # number of weeks
+set SCEN;     # number of scenarios
+
+param scenario symbolic in SCEN;	# current subproblem scenario
+param rate {PROD} > 0;          # tons per hour produced
+param avail {1..T} >= 0;        # hours available in week
+param market {PROD,1..T} >= 0;  # limit on tons sold in week
+
+param prodcost {PROD} >= 0;     # cost per ton produced
+param invcost {PROD} >= 0;      # carrying cost/ton of inventory
+
+param revenue {PROD,1..T,SCEN} >= 0;  # projected revenue/ton
+
+param prob {SCEN} >= 0, <= 1;
+   check: 0.99999 < sum {s in SCEN} prob[s] < 1.00001;
+
+param inv1 {PROD} >= 0;  # inventory at end of first period
+
+var Make {PROD,2..T,SCEN} >= 0;        # tons produced
+var Inv {PROD,2..T,SCEN} >= 0;         # tons inventoried
+var Sell {p in PROD, t in 2..T, SCEN}  # tons sold
+   >= 0, <= market[p,t];
+
+maximize Stage2_Profit:
+   prob[scenario] *
+      sum {p in PROD, t in 2..T} (revenue[p,t,scenario]*Sell[p,t,scenario] -
+         prodcost[p]*Make[p,t,scenario] - invcost[p]*Inv[p,t,scenario]);
+
+subject to Time {t in 2..T}:
+   sum {p in PROD} (1/rate[p]) * Make[p,t,scenario] <= avail[t];
+
+subject to Balance2 {p in PROD}:
+   Make[p,2,scenario] + inv1[p] = Sell[p,2,scenario] + Inv[p,2,scenario];
+
+subject to Balance {p in PROD, t in 3..T}:
+   Make[p,t,scenario] + Inv[p,t-1,scenario] = Sell[p,t,scenario] +
+							Inv[p,t,scenario];
+
+### MASTER PROBLEM ###
+
+param inv0 {PROD} >= 0;  # initial inventory
+
+param nCUT >= 0 integer;
+param cut_type {1..nCUT} symbolic within {"point","ray"};
+
+param time_price {2..T,SCEN,1..nCUT} >= -0.000001;
+param bal2_price {PROD,SCEN,1..nCUT};
+param sell_lim_price {PROD,2..T,SCEN,1..nCUT} >= -0.000001;
+
+var Make1 {PROD} >= 0;
+var Inv1 {PROD} >= 0;
+var Sell1 {p in PROD} >= 0, <= market[p,1];
+
+var Min_Stage2_Profit >= 0;
+
+maximize Expected_Profit:
+   sum {s in SCEN} prob[s] *
+     sum {p in PROD} (revenue[p,1,s]*Sell1[p] -
+        prodcost[p]*Make1[p] - invcost[p]*Inv1[p])
+   + Min_Stage2_Profit;
+
+subj to Cut_Defn {k in 1..nCUT}:
+   if cut_type[k] = "point" then Min_Stage2_Profit <=
+      sum {t in 2..T, s in SCEN} time_price[t,s,k] * avail[t] +
+      sum {p in PROD, s in SCEN} bal2_price[p,s,k] * (-Inv1[p]) +
+      sum {p in PROD, t in 2..T, s in SCEN}
+         sell_lim_price[p,t,s,k] * market[p,t];
+
+subject to Time1:
+   sum {p in PROD} (1/rate[p]) * Make1[p] <= avail[1];
+
+subject to Balance1 {p in PROD}:
+   Make1[p] + inv0[p] = Sell1[p] + Inv1[p];
+data;# stoch2.run
+# ----------------------------------------
+# STOCHASTIC PROGRAMMING PROBLEM
+# USING BENDERS DECOMPOSITION
+# ----------------------------------------
+
+model /tmp/stoch2.mod;
+data stoch.dat;
+
+option solver minos;
+
+option omit_zero_rows 1;
+option display_eps .000001;
+
+problem Master: Make1, Inv1, Sell1, Min_Stage2_Profit,
+   Expected_Profit, Cut_Defn, Time1, Balance1;
+
+option presolve 10;
+
+problem Sub: Make, Inv, Sell, Stage2_Profit, Time, Balance2, Balance;
+param sub_profit {SCEN};
+param tmp_time_price {2..T,SCEN,1..nCUT+1};
+param tmp_bal2_price {PROD,SCEN,1..nCUT+1};
+param tmp_sell_lim_price {PROD,2..T,SCEN,1..nCUT+1};
+
+option presolve 0;
+
+let nCUT := 0;
+let Min_Stage2_Profit := Infinity;
+let {p in PROD} inv1[p] := 0;
+
+param GAP default Infinity;
+
+for {1..50} { printf "\nITERATION %d\n\n", nCUT+1;
+
+   for {s in SCEN} {
+	let scenario := s;
+	solve Sub;
+	let sub_profit[s] := Stage2_Profit;
+	let {t in 2..T} tmp_time_price[t,s,nCUT+1] := Time[t].dual;
+	let {p in PROD} tmp_bal2_price[p,s,nCUT+1] := Balance2[p].dual;
+	let {p in PROD, t in 2..T} tmp_sell_lim_price[p,t,s,nCUT+1] :=
+		Sell[p,t,s].urc;
+	}
+
+   printf "\n";
+
+   if (sum {s in SCEN} sub_profit[s]) < Min_Stage2_Profit - 0.00001 then {
+      let GAP := min (GAP, (Min_Stage2_Profit - sum{s in SCEN} sub_profit[s]));
+      option display_1col 0;
+      display GAP, Make, Sell, Inv;
+      let nCUT := nCUT + 1;
+      let cut_type[nCUT] := "point";
+      let {t in 2..T, s in SCEN} time_price[t,s,nCUT] :=
+		tmp_time_price[t,s,nCUT];
+      let {p in PROD, s in SCEN} bal2_price[p,s,nCUT] :=
+		tmp_bal2_price[p,s,nCUT];
+      let {p in PROD, t in 2..T, s in SCEN}
+         sell_lim_price[p,t,s,nCUT] := tmp_sell_lim_price[p,t,s,nCUT];
+      }
+   else break;
+
+   printf "\nRE-SOLVING MASTER PROBLEM\n\n";
+
+   solve Master;
+   printf "\n";
+   option display_1col 20;
+   display Make1, Inv1, Sell1;
+
+   let {p in PROD} inv1[p] := Inv1[p];
+}
+
+printf "\nOPTIMAL SOLUTION FOUND\nExpected Profit = %f\n\n", Expected_Profit;
+option display_1col 0;
+
+param MAKE {p in PROD, t in 1..T, s in SCEN}
+   := if t = 1 then Make1[p].val else Make[p,t,s].val;
+param SELL {p in PROD, t in 1..T, s in SCEN}
+   := if t = 1 then Sell1[p].val else Sell[p,t,s].val;
+param INV {p in PROD, t in 1..T, s in SCEN}
+   := if t = 1 then Inv1[p].val else Inv[p,t,s].val;
+
+for {s in SCEN} {
+   printf "SCENARIO %s\n", s;
+   display {p in PROD, t in 1..T}
+      (MAKE[p,t,s], SELL[p,t,s], INV[p,t,s]);
+   }
+
+# stoch.dat
+# ----------------------------------------
+# STOCHASTIC PROGRAMMING DATA
+# ----------------------------------------
+
+param T := 4;
+set PROD := bands coils;
+set SCEN := BASE LOW HIGH ;
+
+param avail :=  1 40  2 40  3 32  4 40 ;
+
+param rate :=  bands 200   coils 140 ;
+param inv0 :=  bands  10   coils   0 ;
+
+param prodcost :=  bands 10    coils  11 ;
+param invcost  :=  bands  2.5  coils   3 ;
+
+param revenue
+   [*,*,BASE]:   1     2     3     4 :=
+       bands    25    26    27    27
+       coils    30    35    37    39
+
+    [*,*,LOW]:   1     2     3     4 :=
+       bands    23    24    25    25
+       coils    30    33    35    36
+
+   [*,*,HIGH]:   1     2     3     4 :=
+       bands    21    27    33    35
+       coils    30    32    33    33 ;
+
+param market:    1     2     3     4 :=
+       bands  2000  8500  6500  6500
+       coils  3000  2500  4500  4200 ;
+
+param prob :=  BASE  .45
+               LOW   .35
+               HIGH  .20 ;
+# stoch2.run
+# ----------------------------------------
+# STOCHASTIC PROGRAMMING PROBLEM
+# USING BENDERS DECOMPOSITION
+# ----------------------------------------
+
+# model /tmp/stoch2.mod;
+# data stoch.dat;
+
+option solver minos;
+
+option omit_zero_rows 1;
+option display_eps .000001;
+
+problem Master: Make1, Inv1, Sell1, Min_Stage2_Profit,
+   Expected_Profit, Cut_Defn, Time1, Balance1;
+
+option presolve 10;
+
+problem Sub: Make, Inv, Sell, Stage2_Profit, Time, Balance2, Balance;
+param sub_profit {SCEN};
+param tmp_time_price {2..T,SCEN,1..nCUT+1};
+param tmp_bal2_price {PROD,SCEN,1..nCUT+1};
+param tmp_sell_lim_price {PROD,2..T,SCEN,1..nCUT+1};
+
+option presolve 0;
+
+let nCUT := 0;
+let Min_Stage2_Profit := Infinity;
+let {p in PROD} inv1[p] := 0;
+
+param GAP default Infinity;
+
+for {1..50} { printf "\nITERATION %d\n\n", nCUT+1;
+
+   for {s in SCEN} {
+	let scenario := s;
+	solve Sub;
+	let sub_profit[s] := Stage2_Profit;
+	let {t in 2..T} tmp_time_price[t,s,nCUT+1] := Time[t].dual;
+	let {p in PROD} tmp_bal2_price[p,s,nCUT+1] := Balance2[p].dual;
+	let {p in PROD, t in 2..T} tmp_sell_lim_price[p,t,s,nCUT+1] :=
+		Sell[p,t,s].urc;
+	}
+
+   printf "\n";
+
+   if (sum {s in SCEN} sub_profit[s]) < Min_Stage2_Profit - 0.00001 then {
+      let GAP := min (GAP, (Min_Stage2_Profit - sum{s in SCEN} sub_profit[s]));
+      option display_1col 0;
+      display GAP, Make, Sell, Inv;
+      let nCUT := nCUT + 1;
+      let cut_type[nCUT] := "point";
+      let {t in 2..T, s in SCEN} time_price[t,s,nCUT] :=
+		tmp_time_price[t,s,nCUT];
+      let {p in PROD, s in SCEN} bal2_price[p,s,nCUT] :=
+		tmp_bal2_price[p,s,nCUT];
+      let {p in PROD, t in 2..T, s in SCEN}
+         sell_lim_price[p,t,s,nCUT] := tmp_sell_lim_price[p,t,s,nCUT];
+      }
+   else break;
+
+   printf "\nRE-SOLVING MASTER PROBLEM\n\n";
+
+   solve Master;
+   printf "\n";
+   option display_1col 20;
+   display Make1, Inv1, Sell1;
+
+   let {p in PROD} inv1[p] := Inv1[p];
+}
+
+printf "\nOPTIMAL SOLUTION FOUND\nExpected Profit = %f\n\n", Expected_Profit;
+option display_1col 0;
+
+param MAKE {p in PROD, t in 1..T, s in SCEN}
+   := if t = 1 then Make1[p].val else Make[p,t,s].val;
+param SELL {p in PROD, t in 1..T, s in SCEN}
+   := if t = 1 then Sell1[p].val else Sell[p,t,s].val;
+param INV {p in PROD, t in 1..T, s in SCEN}
+   := if t = 1 then Inv1[p].val else Inv[p,t,s].val;
+
+for {s in SCEN} {
+   printf "SCENARIO %s\n", s;
+   display {p in PROD, t in 1..T}
+      (MAKE[p,t,s], SELL[p,t,s], INV[p,t,s]);
+   }
+
+!!!
+
+echo '
+44.'
+$ampl_cmd <<!!!
+param j := 1;
+set T := 1..10; param x{T};
+let{t in T} x[t] := max(0, if j == 0 then t else 0.5*t);
+display x;	# all x components had the x[1]'s value (0.5).
+!!!
+
+echo '
+45.'
+$ampl_cmd <<!!!
+param M default 5;
+set I  := 0 .. M;
+set A := {i in I, j in I, k in 0..1:
+		(i < M || k == 1) && (j < M || k == 0)};
+param N{(i,j,k) in A} :=
+	if max(i,j,k) == 0 then 1
+	else 1 + (if k == 1 then (if i < M then N[i,j,0]
+					else N[M-1,j,1])
+			    else if i > 0 then
+				(if j == M then N[i-1,M,0]
+					   else N[i-1,j,1])
+			    else N[M,j-1,1]);
+# param Nlast := N[M-1,M,0];
+# display Nlast;
+display N;
+!!!
+
+echo '
+46.'
+$ampl_cmd <<!!!
+param i default 0;
+repeat { print i; let i := i + 1; } until i > 3;
+print 'First repeat done.';
+repeat { print i; let i := i + 1; } while i < 7;
+print 'Second repeat done.';
+repeat while i < 10 { print i; let i := i + 1; }
+print 'Third repeat done.';
+repeat until i > 13 { print i; let i := i + 1; }
+print 'Fourth repeat done.';
+repeat while i < 16 { print i; let i := i + 1; }
+!!!
+
+echo '
+47.'
+$ampl_cmd <<!!!
+# From lagrange.iems.nwu.edu!4er Mon Feb 16 13:31:05 EST 1998
+param setUp >=0;
+param start;
+param end;
+
+param invLimit >= 0;
+param prodLimit >= 0;
+param unitCost {start..end} >= 0;
+param demand {start..end} >= 0;
+
+param cost {n in start..end, i in 0..prodLimit} :=
+   i*unitCost[n] + (if i>0 then setUp);
+
+param g1 {n in start..end+1, s in 0..invLimit}
+   := if n = end+1 then 0 else
+      min {i in 0 .. prodLimit inter demand[n]-s .. demand[n]-s+invLimit}
+         (cost[n,i]+g1[n+1,i+s-demand[n]]);
+
+param g2 {n in start..end+1, s in 0..invLimit}
+   := if n = end+1 then 0 else
+      min {i in 0..prodLimit: demand[n]-s <= i <= demand[n]-s+invLimit}
+         (cost[n,i]+g2[n+1,i+s-demand[n]]);
+
+param g3 {n in start..end+1, s in 0..invLimit}
+   := if n = end+1 then 0 else
+      min {i in 0 .. prodLimit: i in demand[n]-s .. demand[n]-s+invLimit}
+      (cost[n,i]+g3[n+1,i+s-demand[n]]);
+
+
+data;
+
+param setUp:=15;
+param start:=1;
+param end:=4;
+
+param invLimit:= 4;
+param prodLimit:=3;
+
+param unitCost:=
+1  54
+2  51
+3  52
+4  51;
+
+param demand:=
+1   1
+2   1
+3   2
+4   2;
+
+display g1;
+display g2; #wrong value
+display g3; #fault
+!!!
+
+echo '
+48.'
+$ampl_cmd <<!!!
+var x; var y = x^2 + 1;
+var z = 3*y + 4;
+minimize zot: y + z;
+print z, zot;		# wrong values: 0, 0
+solve; print z, zot;	# still 0, 0
+reset data;		# clear some internal state
+solve; print z, zot;	# right values: 7, 8
+option linelim 1;
+solve; print z, zot;	# wrong values: 10, 11
+!!!
+
+echo '
+49.'
+$ampl_cmd <<!!!
+var x >= -2 <= 1;
+minimize zot: <<.5;1.1,-2.7>>x;
+option pl_linearize 5;
+solexpand;
+option pl_linearize 7;
+solexpand;
+option pl_linearize 1;
+solexpand;
+!!!
+
+echo '
+50.'
+$ampl_cmd <<\!!!
+set I := 1..3;
+var x{I} >= 0;
+minimize zip: sum{i in I} i*x[i];
+minimize zap: sum{i in I} i*(x[i] - i)^2;
+s.t. convex: sum{i in I} x[i] = 1;
+s.t. fixx2: x[2] = .3;
+option nl_permute 7, nl_permute;
+solexpand;
+solve;
+display zip, zap;
+display _objname, _obj, _sobjname, _sobj;
+option nl_permute $$nl_permute, nl_permute;
+solexpand;
+solve;
+display zip, zap;
+display _objname, _obj, _sobjname, _sobj;
+!!!
+
+echo '
+51.'
+$ampl_cmd <<!!!
+set S ordered := 2 .. 11;
+set T {1..2} ordered by S;
+param p{i in 1..2} >= i;
+data; set T[1] := 8 3 5; param p[1] 7;
+let T[2] := {2, 9, 6, 7};
+let p[2] := -1;
+display T;
+display p;
+!!!
+
+echo '
+52.'
+$ampl_cmd <<!!!
+var x >= -10 <= 10;
+minimize zot: <<1,2,4,7,9; -1,1, -1,1, -1,1>> x;
+option solver cplex;
+solve;
+display x;
+!!!
+
+echo '
+53.'
+$ampl_cmd <<!!!
+# From 4er@lagrange.iems.nwu.edu Tue Apr 20 20:03:03 1999
+# s99-bug.mod
+# got "presolve has k = 0, P.nfc = 1"
+# ----------------------------------------
+# CUTTING STOCK USING PATTERNS
+# ----------------------------------------
+
+param roll_width > 0;         # width of raw rolls
+param overrun >= 0;           # largest overrun allowed, in %
+
+set WIDTHS;                   # set of widths to be cut
+param orders {WIDTHS} > 0;    # number of each width to be cut
+
+param nPAT integer >= 0;      # number of patterns
+set PATTERNS := 1..nPAT;      # set of patterns
+
+param nbr {WIDTHS,PATTERNS} integer >= 0;
+
+   check {j in PATTERNS}:
+      sum {i in WIDTHS} i * nbr[i,j] <= roll_width;
+
+                            # defn of patterns: nbr[i,j] = number
+                            # of rolls of width i in pattern j
+
+var Cut {PATTERNS} integer >= 0;   # rolls cut using each pattern
+
+minimize Number:                   # minimize total raw rolls cut
+   sum {j in PATTERNS} Cut[j];
+
+subj to Fill {i in WIDTHS}:
+   orders[i] <= sum {j in PATTERNS} nbr[i,j] * Cut[j]
+      <= (1 + overrun/100) * orders[i];
+
+                                   # for each width, total rolls cut
+                                   # meets orders, within overrun limit
+
+data;
+
+param nPAT := 66 ;
+param roll_width := 141 ;
+
+param overrun := 5 ;
+
+param: WIDTHS: orders :=
+	54.000	4
+	52.500	2
+	47.500	3
+	26.500	4
+	25.000	8
+	24.750	10
+	23.250	13
+	22.500	8
+	20.000	5
+	19.500	10
+	18.250	2
+	17.500	16
+	15.250	6
+	13.875	2
+	13.750	2
+	12.500	28
+	12.250	5
+	12.000	10
+	11.625	7
+	11.250	3
+	10.125	3
+	10.000	36
+	9.250	4
+	9.125	3
+	8.750	1
+	8.500	14
+	7.000	2 ;
+
+param nbr default 0 :=
+7	5	1
+7	10	10
+7	28	6
+7	35	6
+7	36	8
+7	64	6
+8.5	1	1
+8.5	5	2
+8.5	23	10
+8.5	24	1
+8.5	44	1
+8.5	45	1
+8.5	46	1
+8.5	47	3
+8.5	48	7
+8.5	54	1
+8.5	59	1
+8.5	61	1
+8.5	66	1
+8.75	8	1
+8.75	11	10
+8.75	37	1
+8.75	45	1
+8.75	51	7
+8.75	56	1
+8.75	61	1
+8.75	63	2
+8.75	64	1
+9.125	3	1
+9.125	12	9
+9.125	29	2
+9.125	30	6
+9.125	42	5
+9.125	52	7
+9.125	65	1
+9.25	3	1
+9.25	7	1
+9.25	26	10
+9.25	33	1
+9.25	39	1
+9.25	49	5
+9.25	53	2
+9.25	58	2
+10	1	3
+10	5	1
+10	8	5
+10	33	1
+10	40	1
+10	43	7
+10	44	1
+10	66	1
+10.125 5	1
+10.125 6	1
+10.125 18	5
+10.125 38	9
+10.125 60	1
+10.125 62	2
+11.25	4	1
+11.25	9	11
+11.25	29	2
+11.25	35	4
+11.25	39	7
+11.25	41	1
+11.25	53	1
+11.25	56	5
+11.25	57	2
+11.625 2	1
+11.625 3	1
+11.625 27	10
+12	1	1
+12	13	11
+12	30	1
+12	31	8
+12	40	1
+12.25	3	1
+12.25	7	2
+12.25	14	11
+12.25	17	1
+12.25	32	6
+12.25	41	9
+12.5	1	2
+12.5	3	2
+12.5	7	2
+12.5	25	4
+12.5	37	9
+12.5	43	1
+12.5	46	3
+12.5	49	2
+12.5	57	3
+12.5	62	4
+12.5	63	1
+12.5	65	7
+13.75	6	2
+13.75	15	10
+13.75	33	1
+13.75	61	9
+13.875 6	2
+13.875 16	10
+13.875 40	1
+13.875 47	7
+13.875 52	1
+13.875 60	1
+13.875 63	8
+13.875 65	1
+15.25	3	2
+15.25	19	9
+15.25	45	5
+15.25	50	5
+15.25	64	1
+15.25	65	2
+17.5	1	1
+17.5	2	1
+17.5	8	2
+17.5	22	8
+17.5	36	1
+17.5	48	2
+17.5	54	3
+17.5	56	1
+17.5	58	7
+17.5	66	1
+18.25	6	2
+18.25	17	7
+18.25	47	1
+18.25	50	1
+18.25	51	2
+18.25	52	1
+18.25	53	5
+18.25	62	1
+19.5	2	2
+19.5	6	2
+19.5	34	7
+19.5	37	1
+19.5	41	1
+19.5	43	3
+19.5	56	3
+19.5	57	3
+19.5	60	6
+20	3	1
+20	5	1
+20	21	7
+20	36	1
+20	51	1
+20	53	1
+20	54	4
+20	59	1
+22.5	2	1
+22.5	3	1
+22.5	8	1
+22.5	18	4
+22.5	25	4
+22.5	31	2
+22.5	32	3
+22.5	52	2
+22.5	57	1
+22.5	59	5
+23.25	1	1
+23.25	5	1
+23.25	8	1
+23.25	12	2
+23.25	20	6
+23.25	38	1
+23.25	48	2
+23.25	49	3
+23.25	50	2
+23.25	51	1
+23.25	55	5
+24.75	1	1
+24.75	27	1
+24.75	28	4
+24.75	29	4
+24.75	30	3
+24.75	55	1
+25	2	2
+25	44	3
+25	64	3
+26.5	4	1
+26.5	7	1
+26.5	24	5
+26.5	38	1
+47.5	4	1
+47.5	10	1
+47.5	26	1
+47.5	36	1
+47.5	42	2
+47.5	44	1
+47.5	45	1
+47.5	46	2
+52.5	5	1
+52.5	11	1
+52.5	39	1
+52.5	40	2
+52.5	62	1
+52.5	66	2
+54	4	1
+54	7	1
+54	23	1
+54	33	2
+54	35	1
+;
+solve;
+!!!
+
+echo '
+54.'
+$ampl_cmd <<!!!
+# Example of fault when slice optimizations are done wrong,
+# perhaps related to changes of 19960223 and 19960314.  Added 19991026.
+set I := 1..2;
+set A{I} dimen 2;
+set B{I} dimen 2;
+set C;
+param p{i in I, A[i]};
+param q{i in I, B[i]};
+param r{i in I, j in C} := sum{(k,j) in A[i]} p[i,k,j]
+			 + sum{(k,j) in B[i]} q[i,k,j];
+data;
+set A[1] :=
+a x
+a y
+a z
+b x
+b y
+b z
+;
+set A[2] :=
+c x
+c y
+d z
+;
+set B[1] :=
+e y
+e z
+f x
+f y
+;
+set B[2] :=
+g x
+h y;
+;
+set C := x y;
+param p :=
+1 a x 1
+1 a y 2
+1 a z 3
+1 b x 10
+1 b y 20
+1 b z 30
+2 c x -1
+2 c y -2
+2 d z -3
+;
+param q :=
+1 e y 100
+1 e z 200
+1 f x 300
+1 f y 400
+2 g x 1000
+2 h y 2000;
+display r;
+!!!
+
+echo '
+55.'
+$ampl_cmd <<!!!
+# Shortened form of slice bug example from Bob Fourer on 19991020.
+param nPat integer > 0;
+
+set Pattern {1..nPat} dimen 2;
+set Use {j in 1..nPat} := setof {(nw,w) in Pattern[j]} w;
+set Widths := union {j in 1..nPat} Use[j];
+
+param pattern {w in Widths, j in 1..nPat} :=
+   if card {(nw,w) in Pattern[j]} = 1 then sum {(nw,w) in Pattern[j]} nw;
+
+var Cut {1..nPat} integer >= 0;
+
+data;
+param nPat := 5;
+
+var Cut :=  1  1   2  1   3  1   4  2   5  1   6  4   7  1
+            8  1   9  2  10  1  11  1  12  1  13  1
+           14  1  15  1  16  1  17  2  18  1  19  1 ;
+
+set Pattern[1] :=
+2	54
+2	12.25
+1	8.5
+;
+
+set Pattern[2] :=
+9	12.5
+1	10
+2	9.25
+;
+
+set Pattern[3] :=
+1	13.875
+8	12.5
+1	10.125
+1	10
+1	7
+;
+
+set Pattern[4] :=
+5	23.25
+1	12.5
+1	12.25
+;
+
+set Pattern[5] :=
+2	54
+1	11.625
+1	11.25
+1	10
+;
+#display Use, Widths;
+display pattern;
+!!!
+
+echo '
+56.'
+$ampl_cmd <<!!!
+# Gave 'presolve has k = 5, P.nfc = 4" until 19991207
+var x1; var x2;
+s.t. c1: x1 + x2 >= 2;
+s.t. c2: x1 - x2 <= 0;
+s.t. c3: 0.1*x1 + x2 <= 1.1;
+s.t. c4: x1 >= 0;
+var y{1..2};
+s.t. foo: y[1] + y[2] >= 3 complements x1 <= 1.02;
+s.t. goo: sum{i in 1..2} (y[i] - i)^2 >= 2;
+solve;
+!!!
+
+echo '
+57.'
+$ampl_cmd <<!!!
+set I := 1..6;
+var f{I};
+var x{I} >= 0;
+var y{i in I} >= i;
+minimize zot: sum{i in I} ((f[i] + i)*x[i] + y[i]^2);
+minimize zip: sum{i in I} (f[i]*x[i] + i*y[i])
+		+ 10*f[1]*(x[1] + x[2])
+		- f[2]*x[3]
+		- f[3]*(x[4]+x[5])
+		+ f[6]*x[6];
+minimize zap: x[1]/f[1] + x[2]/f[2];
+minimize yip:
+		+ 10*y[1]*(x[1] + x[2])
+		- y[2]*x[3]
+		- y[3]*(x[4]+x[5])
+		+ y[6]*x[6];
+minimize yap: (x[1] + f[1])/y[1] + (x[2] + f[2])/y[2] + f[3]*(x[3] + y[3]);
+minimize pzap: sum{i in I} (i*x[i] + <<2,4;1,2,3>>y[i]);
+
+s.t. fixy12: f[1]*y[1] + f[2]^2*y[2] <= 9;
+s.t. fixy{i in 3..6}: ((sum{j in 1..i-1} j^2)/sum{j in 1..i-1}y[j]^2)*y[i] <= i;
+s.t. bletch: 2*x[2] + <<1;-1,2>>x[3] <= 17;
+s.t. xub1: sum{i in I} x[i]*y[i] <= 13;
+s.t. xub2: sum{i in I} f[i]*x[i]*y[i] <= 23;
+s.t. xub3: sum{i in I} x[i] <= 42;
+fix{i in I} f[i] := i;
+solexpand;
+option show_stats 1;
+display f,y, x.ub1, x.ub2;
+!!!
+
+echo '
+58.'
+$ampl_cmd <<!!!
+model diet.mod;
+
+table calories: [NUTR,FOOD] amt;
+
+table foods:
+	[FOOD] INOUT cost, f_min, f_max;
+
+table nutrients:
+	[NUTR] INOUT, n_min, n_max;
+
+data diet2a.dat;
+
+write table calories;
+write table foods;
+write table nutrients;
+reset data;
+read table calories;
+read table foods;
+read table nutrients;
+solve;
+!!!
+
+echo '
+59.'
+$ampl_cmd <<!!!
+model diet.mod;
+set Ttype;
+set Handlers;
+
+table calories{t in Ttype} ('calories.' & t): [NUTR,FOOD] amt;
+
+table foods{t in Ttype} ('foods.' & t):
+	[FOOD] INOUT cost, f_min, f_max;
+
+table nutrients{t in Ttype} ('nutrients.' & t):
+	[NUTR] INOUT, n_min, n_max;
+
+data diet2a.dat;
+data; set Ttype := tab bit abt;
+set Handlers := simpbit.dll fullbit.dll;
+
+load simpbit.dll;
+write table {t in Ttype} calories[t];
+write table {t in Ttype} foods[t];
+write table {t in Ttype} nutrients[t];
+unload simpbit.dll;
+
+for {h in Handlers} {
+	load (h);
+	for{t in Ttype} {
+		if h == 'fullbit.dll' && t == 'abt' then break;
+		display h, t;
+		reset data amt, cost, f_min, f_max, n_min, n_max;
+		read table calories[t];	# will abort on (fullbit.dll, abt)
+		read table foods[t];
+		read table nutrients[t];
+		solve;
+		display Buy;
+		}
+	unload (h);
+	}
+!!!
+
+echo '
+60.'
+$ampl_cmd <<!!!
+var x;
+param p default 1;
+var y = 3*x + 2;
+s.t. ybound: 5 <= y <= 11;
+minimize zot: p*y^2;
+solve;
+display _conname, _con;
+display _varname, _var, _var.rc;
+let p := -1;
+solve;
+display _conname, _con;
+display _varname, _var, _var.rc;
+redeclare maximize zot: p*y^2;
+solve;
+display _conname, _con;
+display _varname, _var, _var.rc;
+let p := 1;
+solve;
+display _conname, _con;
+display _varname, _var, _var.rc;
+redeclare var y = -3*x + 2;
+solve;
+display _conname, _con;
+display _varname, _var, _var.rc;
+let p := -1;
+solve;
+display _conname, _con;
+display _varname, _var, _var.rc;
+redeclare minimize zot: p*y^2;
+solve;
+display _conname, _con;
+display _varname, _var, _var.rc;
+let p := 1;
+solve;
+display _conname, _con;
+display _varname, _var, _var.rc;
+!!!
+
+echo '
+61.'
+$ampl_cmd <<!!!
+model dieti.mod;
+data diet2a.dat; #before tweak to xshift in dotnames.c,
+suffix priority; #faulted after ".relax" was added
+solve;
+!!!
+
+echo '
+62.'
+$ampl_cmd <<!!!
+model dietobj.mod; data dietobj.dat;
+objective total_cost['A&P'];
+solve; objective total_number; solve;
+display total_cost.result, total_number.result;
+!!!
+
+echo '
+63.'
+# Illustration of bug fixed 20010208
+$ampl_cmd <<!!!
+set A{1..2} within 1..3 cross 1..3;
+param p {k in 1..2, i in 1..3}
+	:= sum{(i,j) in A[k]} j + 100*sum{(j,i) in A[k]} j;
+data; set A[1] := 1 2   1 3; set A[2] := 2 3   3 1;
+display p; # was all zeros
+!!!
+
+echo '
+64.'
+# Illustration of bugs fixed 20010212
+$ampl_cmd <<!!!
+set nodes;
+set arcs within nodes cross nodes;
+
+param max_iter := card(nodes)-1; # card(s) = number of elements in s
+
+set step {s in 1..max_iter} dimen 2 :=
+    if s == 1
+        then arcs
+        else step[s-1] union setof {k in nodes,
+               (i,k) in step[s-1], (k,j) in step[s-1]} (i,j);
+
+set reach := step[max_iter];
+
+data;
+set nodes := a b c d e f g h;
+set arcs :=
+	a b
+	a c
+	b d
+	c e
+	f g
+	f h
+;
+display reach;
+display step;
+!!!
+
+echo '
+65.'
+# Illustration of bug fixed 20010215
+$ampl_cmd <<!!!
+set A; set B; data; set A := a b; set B := a b;
+display A, B; let B := {'c','d'}; display B;
+!!!
+
+echo '
+66.'
+$ampl_cmd <<!!!
+# Test changes of 20011210 to handling unused defined variables.
+set I := 1..4;
+var x{I} binary;
+set J := 1..2;
+var p{J};
+var q{j in J} = p[j]^2 + 1;
+var r{j in J} = q[j] - 2*p[j];
+maximize zot: sum{i in I} i*x[i] + q[1] + sin(q[2]);
+s.t. pack: sum{i in I} (2*i-1)*x[i] <= 14;
+var y{i in I} = i*x[i] + if i > 1 then y[i-1];
+var z{i in I} = i*x[i]^2 + if i > 1 then z[i-1];
+var v{i in I} = sum{j in 1..i} j*y[j];
+var w{i in I} = sum{j in 1..i} j*z[j];
+solve;
+display p,q,r;
+display x, y, z, v, w;
+!!!
+
+echo '
+67.'
+# an expand exercise
+$ampl_cmd <<!!!
+set I default 1..3;
+var x{I} >= 0;
+minimize zot{i in I}:
+	if i == 1 then (x[1]-.5)^2
+	else if i == 2 then (x[1] + 2*x[2] - .5)^2
+	else sin(x[3]);
+problem foo{i in I}: x, zot[i];
+s.t. convex: sum{i in I} x[i] = 1;
+
+for{i in I}{
+	problem foo[i];
+	display i;
+	expand;
+	}
+!!!
+
+echo '
+68.'
+# test of $presolve_assoc
+$ampl_cmd <<!!!
+set I := 2..5;
+var x{I} >= 0;
+var y >= .1 := 1 <= 10;
+var z{I} >= 0;
+minimize cmcme1: x[2]*(x[3]*y);
+minimize cmcme2: (y*x[3])*x[2];
+minimize cmcde1: x[2]*(x[3]/y);
+minimize cmcde2: (x[3]/y)*x[2];
+minimize cmedc1: x[2]*(y/x[3]);
+minimize cmedc2: (y/x[3])*x[2];
+
+minimize cdcme1: x[2]/(x[3]*y);
+minimize cdcme2: (y*x[3])/x[2];
+minimize cdcde1: x[2]/(x[3]/y);
+minimize cdcde2: (x[3]/y)/x[2];
+minimize cdedc1: x[2]/(y/x[3]);
+minimize cdedc2: (y/x[3])/x[2];
+
+minimize cmeDc1: (x[2]*y)/x[3];
+minimize cdeDc1: (x[2]/y)/x[3];
+minimize edcDc1: (y/x[2])/x[3];
+
+minimize aa1: (sum{i in I} (y*x[i] + x[i]))^2;
+minimize aa1p: (sum{i in I} (x[i] + y*x[i]))^2;
+minimize aa1q: (37 + sum{i in I} (x[i] + y*x[i]))^2;
+minimize aa1r: (37 - sum{i in I} (x[i] + y*x[i]))^2;
+minimize aa2: ((y*x[2] + x[3]) + (y + x[4]))^2;
+minimize aa2p: ((x[3] + y*x[2]) + (x[4] + y))^2;
+minimize aa3: ((y*x[2] + x[3]) + (y + x[4]) - (y+x[5]))^2;
+minimize aa3p: ((x[3] + y*x[2]) + (x[4] + y) - (y+x[5]))^2;
+
+minimize dist1: x[5]*sum{i in I} x[i]*z[i];
+minimize dist2: (x[5]*sum{i in I} x[i]*z[i])^2;
+minimize dist3: (x[5]*sum{i in I} x[i]*(2*z[i]+1))^2;
+
+s.t. xfix{i in I}: x[i] = i;
+solexpand;
+option preso*oc 0;
+solexpand;
+!!!
+
+echo '
+69.'
+# test of iterated let set := ...
+$ampl_cmd <<!!!
+set S default {0};
+set T{1..1} default {0};
+let{i in 1..2,j in {10,20}} S := S union {i+j};
+let{i in 1..2, j in 10..20 by 10} T[1] := T[1] union {i} union(T[1] union {j+i});
+display S, T[1];
+!!!
+
+echo '
+70.'
+# botched in changes leading to 69 above
+$ampl_cmd <<!!!
+set S; set T;
+data; set S := a b c;
+set T := x y z;
+for{t in T} {
+	let S := S union {t};
+	display S, t;
+	}
+!!!
+
+echo '
+71.'
+# trouble missed by case 70; from a mess by sjf
+$ampl_cmd <<!!!
+set S; set T; set U; set V{U};
+param size;
+data;
+set S := a b; set U := a b;
+set V[a] :=; set V[b] :=;
+for{s in S} {
+	display s;
+	let T := {s};
+	repeat {
+		let size := card(T);
+		display T;
+		let T := T union union{t in T} V[t];
+		display T;
+		} while size != card(T);
+	}
+!!!
+
+echo '
+72.'
+# bug reported by Sanjay Saigal 20020530 gave "invalid subscript goo[2,4]".
+$ampl_cmd <<!!!
+param n; param foo{1..n};
+param goo{i in 1..n, j in 1..foo[i]};
+read n, {i in 1..n} (foo[i], {j in 1..foo[i]} goo[i,j]);
+3
+4 10 20 30 40
+3 1 2 3
+7 100 200 300 400 500 600 700
+display goo;
+!!!
+
+echo '
+73.1'
+# bug revealed in timing example of sjf (received 15 July 2002)
+$ampl_cmd <<\!!!
+set A; set I := 1..10;
+param p{A} default 0;
+param q default 0;
+var x{A}; var y;
+minimize o: sum{i in A} x[i] + y; # so _var works with "fax"
+suffix zap;
+data; set A :=  a b c;
+let{i in I} p['b'] := p['b'] + 1;
+let{i in I} x['b'] := x['b'] + 1;
+let{i in I} x['b'].zap := x['b'].zap + 1;
+display p, x, x.zap;
+let{i in I} _var[2].zap := _var[2].zap + 1;
+let{i in I} y.zap := y.zap + 1;
+display _varname, _var.zap;
+!!!
+
+echo '
+73.2'
+# bug revealed in timing example of sjf (received 15 July 2002)
+$ampl_cmd <<\!!!
+set A; set I := 1..10;
+param p{A} default 0;
+param q default 0;
+var x{A}; var y;
+suffix zap;
+data; set A :=  a b c;
+let{i in I} p['b'] := p['b'] + 1;
+let{i in I} x['b'] := x['b'] + 1;
+let{i in I} x['b'].zap := x['b'].zap + 1;
+display p, x, x.zap;
+minimize zot: x['a']^2 + y;	# use x and y
+let{i in I} _var[2].zap := _var[2].zap + 1;
+let{i in I} y.zap := y.zap + 1;
+display _varname, _var.zap;
+!!!
+
+echo '
+74.'
+# bug reported by bwk 20020813
+$ampl_cmd <<\!!!
+param N := 100;
+param odd {i in 1..N} :=
+	if i = 1 then 3 else
+		min {j in odd[i-1]+2..odd[i-1]*2 by 2:
+			not exists {k in 1..i-1} j mod odd[k] = 0} j;
+display odd;
+!!!
+
+echo '
+75.'
+# bugs with iterated printf
+$ampl_cmd <<\!!!
+param factorial{i in Integers} integer =
+	if i <= 0 then 1 else i*factorial[i-1];
+display{i in 1..4} factorial[i];
+printf {i in 1..2} "%d\n", i;
+!!!
+
+echo '
+76.'
+# bug with unused defined variables
+$ampl_cmd <<\!!!
+var x;
+var g = x^3 - x^2 - x - 1;
+var gp = 3*x^2 - 2*x - 1;
+let x := 2;
+display x, g, gp; # OK
+let x := x - g/gp;
+display x,g;	# botched
+!!!
+
+echo '
+77.'
+# bug in version 20080616 with nonlin defined variables in objective and constraints
+$ampl_cmd <<\!!!
+set I = 1..2;
+var x{I} := 1;
+var y{i in I} = x[i]^2 + i;
+minimize zot: sum{i in I} (y[i] - 4)^2;
+s.t. foo: sum{i in I} y[i] <= 7;
+solve;
+!!!
+
+echo '
+78.'
+# bug with "update data" introduced 20060905 and fixed 20080803
+$ampl_cmd <<\!!!
+set I = 1..2; var x{I}; param p{I};
+minimize zot: sum{i in I} (x[i] - p[i])^2;
+data; param p := 1 1  2 2;
+solve;  update data;
+data;  param p := 2 5;
+print sum{i in I} (x[i] + p[i]); # printed 6 rather than 9
+!!!
+
+echo '
+79.'
+# bugs with var in union of intervals and piecewise-linear terms fixed 20100914
+$ampl_cmd <<\!!!
+var x in interval[10,15] union interval[25,30] union interval[50,60];
+param np integer;
+param p{1..np};
+data;
+param np := 5;
+param p := 1 3  2 12  3 27  4 56  5 80;
+
+minimize zot{i in 1..np}: <<p[i]; -1,1>> x;
+
+option solver cplex, nl_comments 1;
+for{i in 1..np} {
+	objective zot[i];
+	solexpand;
+	solve;
+	display x;
+	}
+!!!
+
+echo '
+80.'
+# no value for p[3]
+$ampl_cmd <<\!!!
+set A ordered;
+param no;
+param p{A};
+param q{i in A: i != no} = p[i]*(p[i] + 1);
+data;
+set A := 1 2 3 4;
+param no := 3;
+param p := 1 3 2 7 4 11;
+display q;
+param r{A,A};
+for{i in A} {
+	for{j in A}
+		let r[i,j] := 100*j + i^2;
+	}
+display r;
+for{i in A} {
+	print i, p[i], q[i], ord(i), ord(i,A);
+	display i, p[i], q[i], ord(i), ord(i,A);
+	print i, p[i], q[i], ord(i), ord(i,A);
+	print 'End of loop with i =', i;
+	}
+!!!
+
+echo '
+81.'
+# redeclaration of defined variable
+$ampl_cmd <<\!!!
+var x := 1;
+var y := 2;
+var z = y^2 + 1;
+param p; param q;
+data; param p := 3; param q := 4;
+display x, y, z, p, q;
+redeclare var z = p*x + q*y^2;
+display x, y, z, p, q;
+
+reset;
+
+printf '\n82.\n';
+# a script that once revealed some bugs in "bax"
+param C := 3;
+param N1   := 3;
+param N2 := 3;
+var x1{i in 1..C, j in 1..N1} >= 0, <= 1, := 1/C;
+var x2{i in 1..C, j in 1..N2} >= 0, <= 1, := 1/C;
+var V1{j in 1..N1} >= 4000, <= 12000;
+var V2{j in 1..N2} >= 4000, <= 12000;
+for {i in 1..C, j in 1..N2}
+  let x2[i,j] := 0.0;
+
+for {j in 1..N1} {
+  let x1[1,j] := 1.0;
+  let V1[j] := 8093.0;
+}
+
+for {j in 1..N2} {
+  let x2[1,j] := 1.0;
+  let V2[j] := 8099.0;
+}
+
+display x1, x2, V1, V2;
+
+reset;
+
+printf '\n83.\n';
+# axg gives, e.g., (x[1] + x[2] + x[3] + x[1] + 2*x[2] + 3*x[3] + 2*x[1] + 3*x[2] + x[3])^2
+# whereas bax gives (4*x[1] + 6*x[2] + 5*x[3])^2
+var x{i in 1..3} := i^2 + 1;
+var y = sum{i in 1..3} i*x[i] + 10;
+var z = 2*x[1] - 3 + 3*x[2] + x[3];
+minimize o1: sum{i in 1..3} x[i] + y + z;
+minimize o2: (sum{i in 1..3} x[i] + y + z)^2;
+minimize o3: sum{i in 1..3} x[i] + sum{i in 1..3} i*x[i] + 2*x[1] + 3*x[2] + x[3];
+minimize o4: (sum{i in 1..3} x[i] + sum{i in 1..3} i*x[i] + 2*x[1] + 3*x[2] + x[3])^2;
+s.t. c1: sum{i in 1..3} x[i] + y + z >= 10;
+s.t. c2: log(sum{i in 1..3} x[i] + y + z) >= 2;
+s.t. c3: sum{i in 1..3} x[i] + sum{i in 1..3} i*x[i] + 2*x[1] + 3*x[2] + x[3] >= 10;
+s.t. c4: log(sum{i in 1..3} x[i] + sum{i in 1..3} i*x[i] + 2*x[1] + 3*x[2] + x[3]) >= 2;
+solexpand;
+
+reset;
+
+printf '\n84.\n';
+# bax once got this wrong...
+# a little test of "in"
+set S;
+param o symbolic;
+param p symbolic;
+param q symbolic;
+data;
+set S := 1 5 17;
+for{ i in S } {
+	display i;
+	let o := if i^2 in  i .. i+12 then 'yes' else 'no';
+	let p := if i^2 in  {j in i .. i+12} then 'yes' else 'no';
+	let q := if i^2 in  {j in i .. i+12: j mod 3 != 0} then 'yes' else 'no';
+	display o, p, q;
+	}
+reset;
+
+printf '\n85.\n';
+# test of ordered by EBCDIC
+set T ordered;
+set S ordered by T;
+data;
+set S :=  b a c Q V P;
+set T := a P b Q c V;
+display S;
+reset;
+set S ordered by EBCDIC;
+data; set S := b a c Q V P;
+display S;
+
+reset;
+
+printf '\n86.\n';
+
+# test some iterated set ops
+
+set A dimen 3;
+set S{1..2,1..2};
+set T{1..2};
+set U{1..2};
+set S3 dimen 3;
+data;
+set S[1,1] := a;
+set S[1,2] := b;
+set S[2,1] := c;
+set S[2,2] := d;
+set T[1] := a c e t;
+set T[2] := b d f t;
+set U[1] := a d g t u;
+set U[2] := b c h t u;
+set A := (1,1,a) (1,2,b) (2,1,c) (2,2,d) (1,1,e) (2,2,f) (3,4,z);
+display A, S, T, U;
+
+for{i in 1..2} {
+	print 'start of i =', i;
+	display union{j in 1..2} S[i,j];
+	display union{j in 1..2} U[j];
+	display inter{j in 1..2} T[j];
+	display inter{j in 1..2} U[j];
+	for{j in 1..2} {
+		print 'start of j =', j;
+		display i,j;
+		printf "Trying display S[%d,%d]...\n", i, j;
+		display S[i,j];
+		display S[i,j], T[i], U[j];
+		display i..j;
+		display S[i,j] cross T[i] cross U[j];
+		print 'print{(a,b,c) in S[i,j] cross T[i] cross U[j]}: a, b, c;';
+		print{(a,b,c) in S[i,j] cross T[i] cross U[j]}: a, b, c;
+		let S3 := S[i,j] cross T[i] cross U[j];
+		print 'print{(a,b,c) in S3}: a,b,c;';
+		print{(a,b,c) in S3}: a,b,c;
+		display T[i] diff S[i,j], U[i] diff S[i,j];
+		display T[j] diff S[j,i], U[j] diff S[j,i];
+		display T[i] diff U[j], U[j] diff T[i], T[i] symdiff U[j];
+		display T[i] union U[j], U[j] union T[i];
+		display setof{(i,j,k) in A} (i,j,k);
+		display if i < j then T[i] else U[j];
+		print 'end of j =', j;
+		}
+	print 'end of i =', i;
+	}
+
+reset;
+
+printf '\n87.\n';
+# some ordered sets
+
+set A ordered;
+set B ordered by A;
+set C{1..2} ordered by A;
+data;
+set A := a b c d e;
+set B := e d;
+set C[1] := b a c;
+set C[2] := e b d;
+print if 'e' in B then 'yes' else 'no';
+display B, C;
+update data A;
+data; set A := e d c b a;
+display B, C;
+
+reset;
+
+printf '\n88.\n';
+# bug reported 20140121 by Christian Valente
+s.t. e: 0;
+display e;
+display e.val;
+var x;	# added 20140401
+minimize o: (x-1)^2;
+display e, e.val;
+
+reset;
+
+printf '\n89.\n';
+# some tests of defined variables involving piecewise-linear terms
+var x;
+var y1 = <<1;1,2>>x;
+var y2 = <<1.5;.5,2>>x;
+var z = 3*x + 2*y1 + 4*y2;
+s.t. zot: z <= 38;
+solexpand;
+reset;
+printf '\n90.\n';
+var x{1..2};
+var y1 = <<1,2; 1, 2, 6>>x[1];
+var z1 = <<1,3; 6, 3, 1>> y1;
+var y2 = <<1,2,3;1,2,3,4>> x[2];
+var z2 = <<.5, 1.5; 1, 2, 3>> y2;
+s.t. bletch: z1 + z2 >= 3;
+solexpand;
+reset;
+printf '\n91.\n';
+var x;
+var y = <<1,2; 1, 2, 6>> x;
+var z = <<1,3; 6, 3, 1>> y - 4*x;
+s.t. c3: 3*z >= 0;
+solexpand;
+reset;
+printf '\n92.\n';
+var x;
+var y = <<1,2; 1, 2, 6>> x;
+var z = <<1,3; 6, 3, 1>> y;
+s.t. c3: z == 6*x;
+solexpand;
+reset;
+printf '\n93.\n';
+var x;
+var y = <<1,2,3;1,2,3,4>> x;
+var z = <<.5, 1.5; 1, 2, 3>> y;
+s.t. c3: z >= 3;
+solexpand;
+reset;
+printf '\n94.\n';
+var x;
+var y = <<1,2,3;1,2,3,4>> x;
+var z = <<.5, 1.5; 1, 2, 3>> y - <<.5, 1, 1.25, 2, 3; 1, 2, 4, 6, 9, 12>> x;
+s.t. c3: z >= 3;
+solexpand;
+reset;
+printf '\n95.\n';
+var x;
+var y1 = <<1;1,2>>x;
+var y2 = <<1.5;.5,2>>x;
+var z = 3*x + 2*y1 + 4*y2;
+s.t. zot1: z  + <<-1; -3,-2>> z <= 38;
+s.t. zot2: z  + <<-1; 7,8>> z <= 38;
+solexpand;
+reset;
+printf '\n96.\n';
+var x;
+var y1 = <<1;1,2>>x;
+var y2 = <<1;-.5,-1>>x;
+var z = 3*x + 2*y1 + 4*y2;
+s.t. zot1: z  + <<-1; -3,-2>> z <= 38;
+s.t. zot2: z  + <<-1; 7,8>> z <= 38;
+solexpand;
+reset;
+printf '\n97.\n';
+# Cases of interest:
+#	A. 1. Composition 0
+#	B. Composition linear, combining with
+#		2. nothing
+#		3. linear, cancelling to 0
+#		4. linear, not cancelling
+#		5. plterm
+#	C. Composition plterm, combining with
+#		6. nothing
+#		7. linear
+#		8. plterm, cancelling
+#		9. plterm, not cancelling
+# For both constraints and objectives, need two above and two below,
+# one with linear terms, the other with plterms.
+
+set I = 1..17;
+set J1 = 4..7;
+set J2 = 8..11;
+var x{I};
+var y0 = <<-1,1; 0, 1, 0>> x[3];
+var z0 = <<-2,2; -1, 0, 1>> y0;
+var y1{i in J1} = <<1,2; 1, 2, 6>> x[i];
+var z14 = <<1,3; 6, 3, 1>> y1[4];
+var z56{i in 5..6}  = <<1,3; 6, 3, 1>> y1[i] - (i+1)*x[i];
+var z1{i in 6..7} = <<1,3; 6, 3, 1>> y1[i];
+var y2{i in J2} = <<1,2,3;1,2,3,4>> x[i];
+var z2{i in J2} = <<.5, 1.5; 1, 2, 3>> y2[i];
+s.t. c0a: sum{i in I} x[i] >= 1;
+s.t. c0b: sum{i in I} <<1;1,2>>x[i] <= 173;
+s.t. c1:  z0 + sum{i in I} x[i] >= 2;
+s.t. c2:  z14 <= 15;
+s.t. c3:  z56[5] >= 29;
+s.t. c4:  z56[6] >= 31;
+s.t. c5:  z1[7] + <<1; 1,2>>x[7] <= 183;
+s.t. c6:  z2[8] <= 37;
+s.t. c7:  z2[9] + x[9] <= 43;
+s.t. c8:  z2[10] == <<0.5, 1, 1.25, 2, 3; 1, 2, 4, 6, 9, 12>>x[10];
+s.t. c9:  z2[11] + <<1; 1,2>> x[11] <= 129;
+solexpand;
+reset;
+printf '\n98.\n';
+set A; set B within A; param p{A}; param q;
+var x{i in A: p[i] != q};
+minimize zot: sum{i in B} (x[i] - p[i])^2;
+data;
+param :A: p :=
+	a 2.9
+	b 1.7
+	c 2.4
+	d 2.9
+	e 1.1
+	f 2.9
+	g 2.9
+	;
+set B := c e;
+param q := 1.7;
+
+display x, x.lb, x.ub;
+solexpand;
+
+let {i in {"a", "d", "f"}} p[i] := 1.7;
+display x, x.lb, x.ub;
+solexpand;
+
+reset;
+printf '\n99.\n';
+set K; var x {K}; var y {k in K} = x[k];
+data; set K := 1 2; var x := 1 1 2 0;
+for{i in 1..2}{
+	display x, y;
+	display {k in K : x[k] == 1};
+	display {k in K : y[k] == 1};	#was wrong in 2nd iter
+	let x[2] := i;
+	}
+reset;
+printf '\n100.\n';
+param p;
+param pa{1..2};
+param q{1..8};
+var r;
+var ra{1..2};
+
+for{i in 1..2} {
+	let p := i;
+	let r := i;
+	let pa[1] := i;
+	let ra[1] := i;
+	let q[1] := p;
+	let q[2] := p+10;
+	let q[3] := r;
+	let q[4] := r+10;
+	let q[5] := pa[1];
+	let q[6] := ra[1];
+	let q[7] := pa[1] + 100;
+	let q[8] := ra[1] + 100;
+	display i, p, r, q;
+	}
+reset;
+printf '\n101.\n';
+# sparse matrix multiplication
+set Aij dimen 2;
+param A{Aij};
+set Bjk dimen 2;
+param B{Bjk};
+set I = setof{(i,j) in Aij} i;
+set K = setof{(j,k) in Bjk} k;
+set Cik = {i in I, k in K: card({(i,j) in Aij} intersect {(j,k) in Bjk}) > 0};
+param C{(i,k) in Cik} = sum{j in {(i,j) in Aij} intersect {(j,k) in Bjk}} A[i,j]*B[j,k];
+data;
+param	:Aij:		A :=
+	a a		2.1
+	a c		3.2
+	b b		1.5
+	b c		2.4
+	b e		3.9
+	c d		1.1
+	c e		1.7
+	d b		2.3
+	d e		2.2
+	e a		3.8
+	e c		4.2
+	e d		1.6
+	;
+param	:Bjk: 		B :=
+	a a		3.5
+	a c		4.3
+	b c		3.3
+	c a		2.5
+	c b		2.9
+	d a		3.7
+	e a		3.6
+	e c		4.4
+	;
+display C;
+reset;
+printf '\n102.\n';
+# was acl/new/foo1
+set A; set B dimen 2;
+data;
+set A := a b c d;
+set B := (p,q) (p,a) (q,a) (c,z) (b,x);
+for{n in A} print n, card{(i,j) in B: i == n || j == n};
+print{n in A}: n, card{(i,j) in B: i == n || j == n};
+reset;
+printf '\n103.\n';
+# was acl/new/foo2
+param p{1..2};
+data; param p := 1 4 2 2;
+model;
+param n;
+var x{1..n};
+minimize zot: sum{i in 1..n} (x[i] - i)^2;
+for{i in 1..2} {
+	let n := p[i];
+	display i, zot;
+	for{k in {_snvars}} {
+		display {1..k};
+		print {j in 1..k}: j, j^2;
+		}
+	}
+reset;
+printf '\n104.\n';
+# was acl/new/foo4
+param p{1..2};
+data; param p := 1 4 2 2;
+model;
+param n;
+var x{i in 1..n} := 2*i + n;
+minimize zot: sum{i in 1..n} (x[i] - i)^2;
+for{i in 1..2} {
+	let n := p[i];
+	let{j in 1..n} x[j] := 2*j + n;
+	display i, zot, _var[1] + _var[2];
+	let _var[1] := _var[1] + 10;
+	display _var[1] + _var[2];
+	display _var[1];
+	}
+reset;
+
+printf '\n105.1.\n';
+# bug fixed 20151010
+var x;
+var y = x + 3;
+s.t. c: y = 7;
+minimize o: <<4;-2, 3>> x;
+write 0;
+display x, y, o; # printed "y = 3" rather than "y = 7"
+
+reset;
+
+printf '\n105.2 \n';
+# bug fixed 20151010
+node n{1..3};
+arc a{i in 0..2} from {if i >= 1} n[i] to {if i < 2} n[i+1];
+s.t. c: a[1] = 3;
+var x = a[2] + 1;
+var y;
+minimize o: x + <<7;-1,1>> y;
+solve;
+display o, x, y; # o and y were 11 and -7 rather than -3 and 7
+reset;
+
+# bugs fixed Sept. 2017 in nax
+printf "\n106.\n";
+set S;
+param p{S};
+data; set S := 1 2;
+read{i in S}: p[i] < ('foo.text' & i);
+display p;
+reset;
+
+printf "\n107.\n";
+set S;
+param p{S};
+data; set S := 1 2;
+for{i in S} read p[i] < ('foo.text' & i);
+display p;
+reset;
+printf "\n108.\n";
+set S dimen 2;
+set T = setof{(i,j) in S} i;
+param p{T};
+data;
+set S := (1,1), (2,1), (3,2), (4,1);
+read{(i,j) in S}: p[i] < ('foo.text' & j);
+display p;
+reset;
+printf "\n108.\n";
+set A; set B{A} ordered;
+param p{i in A, B[i]};
+data;
+set A := 1 2 3;
+set B[1] := a b c;
+set B[2] := c a b;
+set B[3] := b c a;
+param p : a b c :=
+1 11 12 13
+2 21 22 23
+3 31 32 33;
+display p;
+reset;
+printf "\n109.\n";
+set S; param p{S};
+data; param :S: p := a 0 b 1 c 0 d 1;
+for{i in S} {
+	display i;
+	if (p[i]) then {
+		print 'if p[i] is true';
+		display p[i];
+		}
+	print 'end of loop with i =', i;
+	}
+print 'loop done';
+reset;
+printf "\n110.\n";
+set S;
+set T;
+param p{S};
+param q symbolic;
+param r{T};
+param s default 0;
+data;
+set S := a b c;
+set T := x y z;
+param p := a 1 c 3;
+param r := x 11 y 12;
+for{i in 1..2} {
+	let s := s + 1;
+	let q := 'P' & s;
+	display i;
+	let S := S union {q};
+	let T := T union {q};
+	let p[q] := i+2;
+	let r[q] := i+30;
+	}
+display p, r;
+reset;
+printf "\n111.\n";
+set S;
+set T;
+param p{S};
+param q{T};
+param r{i in S, j in 1..q[p[i]]: p[i] in T && j + p[i] < 8} = i + j;
+data;
+param :S: p := 1 1 2 2 3 3;
+param :T: q := 1 2 3 4;
+display r;
+reset;
+printf "\n112.\n";
+# nax bugs with updates to i and R[i], fixed 20180511
+set P dimen 2;
+set N = union{(i,j) in P} {i,j};
+set R{N};
+param n;
+data;
+set P :=
+	1 2
+	2 3
+	3 4
+	;
+display N;
+for{i in N} {
+	let R[i] := setof{(j,i) in P} j;
+	for{j in 1 .. card(N)} {
+		let R[i] := R[i] union setof {(a,b) in P: a != i && b in R[i]} a;
+		}
+	}
+display R;
+reset;
+printf "\n112.\n";
+# trouble with symbolic (string-valued) imported functions
+# having at least one numeric arg, fixed 20180618
+function kth symbolic;
+param p symbolic; let p := 1.5;
+print{i in 1..3} kth(i,p,'abc',42);
+let p := 'xyz';
+print{i in 1..3} kth(i,p,'abc',42);
+reset;
+printf "\n113.\n"; # use of subadj
+set A;
+param p{A};param q{A};
+param r{i in A} = p[i] + q[i];
+data;
+param :A: p q :=
+a 1 2
+b 3 5
+c 4 7;
+display p, q, r;
+reset data q;
+#data; param q := a 2.5 d 4;	# invalid subscript "d" would cause exit
+				# no value for "c" would cause exit
+data; param q := a 2.5 b 4 c 23;
+display p, q, r;
+reset;
+printf "\n114.\n";
+# exercise close, shell, show, solution, write, add, unfix, reset problem
+# commands, data, drop all, restore all, show objective, environ, call, cd
+# /*current*/environ, /*current*/ problem, xref, remove, sleep, reload
+# repeat, continue, reset option /*within braces*/, {...}, delete, purge
+# break, break all, check, reset suffix, reset function
+
+# not tested: exit
+
+var x;
+var y;
+s.t. yb: y <= 3;
+minimize o: (y - 4)^2 + (x-y)^2;
+write gzap;
+shell 'minos zap wantsol=1';
+solution zap.sol;
+display x,y;
+remove zap.nl, zap.sol;
+for{i in 1..2}{
+drop yb;
+fix y := i;
+solve;
+display x,y;
+if i >= 2 then break;
+unfix y;
+option solver snopt;
+solve;
+display x,y;
+reset problem;
+solve;
+display x,y;
+option solver;
+reset options;
+option solver;
+sleep .2;
+}
+objective;
+param k <= 5 default 0;
+repeat {
+	add yb;
+	solve;
+	display x,y;
+	if k >= 2 then break all;
+	fix y := k;
+	solve;
+	display x,y;
+	unfix y;
+	solve;
+	display x,y;
+	let k := k + 1;
+	if k >= 2 then continue;
+	display k;
+	}
+check;
+print 'solve; display x,y;' >zap;
+close zap;
+commands zap;
+remove zap;
+show x, yb;
+xref x;
+environ foo;
+option solver snopt;
+solve;
+environ;
+environ Initial;
+option solver;
+function foo pipe "awk '{print $1+2}'";
+display foo(3), foo(5);
+reset function;
+display foo(6);
+reset data foo;
+display foo(47);
+function ncall;
+display ncall();
+call ncall;
+display ncall();
+cd .;
+cd;
+reload;
+display ncall();
+drop all;
+drop;
+restore all;
+restore;
+reset;
+printf "\n115.\n";
+# derived from attach19/bugcases/bug190910.zip
+var x0 := 1;
+var x1 = << 0 ; 0, 1 >> x0;
+var x2 = << 0 ; 0, 1 >> x1;
+display x0, x1, x2; # all should be 1
+reset;
+printf "\n116.\n";
+option old_param_eq 1;
+param p{i in 1..3} := if (i == 1) then 0 else p[i-1]+1;
+show p;
+display p;
+show p;
+reset options;
+reset;
+printf "\n117.\n";
+param p{i in 1..3} := if (i == 1) then 0 else p[i-1]+1;
+show p;
+display p;
+show p;
+reset;
+printf "\n118.\n";
+param p{i in 1..3} = if (i == 1) then 0 else p[i-1]+1;
+show p;
+display p;
+show p;
+!!!
+
+echo '
+119'
+$ampl_cmd -vi1 <<!!!
+var x{i in {(1, 2), (3, 'abc')}} >= i;
+minimize zot: sum{(i,j) in {(1, 2), (3, 'abc')}} x[i,j]^2;
+print 'Omitted line';
+solve;
+display x;
+!!!
