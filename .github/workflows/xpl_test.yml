@@ -1,0 +1,32 @@
+on:
+  push:
+    branches:
+      - main
+
+name: Cross platform tests
+
+jobs:
+  run:
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+    runs-on: ${{ matrix.config.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: windows-latest, r: 'release'}
+          - {os: macOS-latest, r: 'release'}
+          - {os: ubuntu-16.04, r: 'release'}
+
+    env:
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+      RSPM: ${{ matrix.config.rspm }}
+
+    steps:
+      - name: Setup actions checkout
+        uses: actions/checkout@v2
+
+      - name: Build and install stm
+        bash: |
+            cd ampl/test_scripts/
+            md5sum one.case

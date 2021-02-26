@@ -1,0 +1,977 @@
+#!/bin/sh
+ampl_cmd=${1:-ax}
+
+echo '
+1.'
+$ampl_cmd <<!!!
+param N integer > 0;
+param p{i in 1..N} :=  p[10];
+data;
+param N := 7;
+display p;
+!!!
+
+echo '
+2.'
+$ampl_cmd <<!!!
+param N integer > 0;
+param p{i in 1..N} default if i == 1 then 1 else i*p[i-1];
+data;
+param N := 7;
+param p := 3 7 5 22;
+display p;
+
+set A circular;
+param sp{i in 1..4} symbolic default if i == 1
+					then 'abc'
+				else if sp[i-1] in A
+					then next(sp[i-1],A)
+				else i;
+
+data; set A := 2 x y; param sp := 3 xyz;
+display sp;
+display{i in 1..4} sp[i];
+!!!
+
+echo '
+3.'
+$ampl_cmd <<!!!
+param N integer > 0;
+param p{i in 1..N} := if i == 1 then 1 else i*p[i-1];
+data;
+param N := 7;
+display p;
+
+set A circular;
+param sp{i in 1..4} symbolic := if i == 1
+					then 'abc'
+				else if sp[i-1] in A
+					then next(sp[i-1],A)
+				else i;
+
+data; set A := 2 x y;
+display sp;
+!!!
+
+echo '
+4.'
+$ampl_cmd <<!!!
+var x{i in 1..2};
+minimize zot{j in 1..3}: sum{i in 1..2} (x[i]-(i+j))^2;
+objective zot[1];
+solve;
+display x;
+!!!
+
+echo '
+5.'
+$ampl_cmd <<!!!
+model dietobj.mod;
+data dietobj.dat;
+objective total_number;
+solve;
+display total_cost,total_number;
+objective total_cost["JEWEL"];
+solve;
+display total_cost,total_number;
+!!!
+
+echo '
+6.'
+$ampl_cmd -vi1 <<!!!
+model dietobj.mod;
+data dietobj.dat;
+solve;
+display diet_min;
+drop diet_min["Q"];
+solve;
+display diet_min;
+!!!
+
+echo '
+7.'
+$ampl_cmd <<!!!
+model dietobj.mod;
+data dietobj.dat;
+drop diet_min;
+solve;
+!!!
+
+echo '
+8.'
+$ampl_cmd <<!!!
+set PROD;	  # products
+set AREA {PROD};  # market areas for each product
+param T > 0;	  # number of weeks
+
+param rate {PROD} > 0;		# tons per hour produced
+param inv0 {PROD} >= 0; 	# initial inventory
+param avail {1..T} >= 0;	# hours available in week
+param market {p in PROD, AREA[p], 1..T} >= 0;
+				# limit on tons sold in week
+
+param prodcost {PROD} >= 0;	# cost per ton produced
+param invcost {PROD} >= 0;	# carrying cost/ton of inventory
+param revenue {p in PROD, AREA[p], 1..T} >= 0;
+				# revenue per ton sold
+
+var Make {PROD,1..T} >= 0;	# tons produced
+var Inv {PROD,0..T} >= 0;	# tons inventoried
+var Sell {p in PROD, a in AREA[p], t in 1..T} >= 0, <= market[p,a,t];
+				# tons sold
+
+maximize total_profit:
+   sum {p in PROD, t in 1..T}
+      (sum {a in AREA[p]} revenue[p,a,t]*Sell[p,a,t] -
+	 prodcost[p]*Make[p,t] - invcost[p]*Inv[p,t]);
+
+	   # Total revenue less costs for all products in all weeks
+
+subject to time {t in 1..T}:
+   sum {p in PROD} (1/rate[p]) * Make[p,t] <= avail[t];
+
+	   # Total of hours used by all products
+	   # may not exceed hours available, in each week
+
+subject to initial {p in PROD}:  Inv[p,0] = inv0[p];
+
+	   # Initial inventory must equal given value
+
+subject to balance {p in PROD, t in 1..T}:
+   Make[p,t] + Inv[p,t-1] = sum {a in AREA[p]} Sell[p,a,t] + Inv[p,t];
+
+	   # Tons produced and taken from inventory
+	   # must equal tons sold and put into inventory
+data;
+param T := 4;
+
+set PROD := bands coils;
+set AREA[bands] := east north ;
+set AREA[coils] := east west export ;
+
+param avail :=	1 40  2 40  3 32  4 40 ;
+
+param rate :=  bands  200  coils  140 ;
+param inv0 :=  bands   10  coils    0 ;
+
+param prodcost :=  bands 10    coils 11 ;
+param invcost  :=  bands  2.5  coils  3 ;
+
+param revenue :=
+
+  [bands,*,*]:	 1	2      3      4 :=
+      east     25.0   26.0   27.0   27.0
+      north    26.5   27.5   28.0   28.5
+
+  [coils,*,*]:	 1     2     3	   4 :=
+      east	30    35    37	  39
+      west	29    32    33	  35
+      export	25    25    25	  28 ;
+
+param market :=
+
+  [bands,*,*]:	   1	 2     3     4 :=
+       east	2000  2000  1500  2000
+       north	4000  4000  2500  4500
+
+  [coils,*,*]:	   1	 2     3     4 :=
+       east	1000   800  1000  1100
+       west	2000  1200  2000  2300
+       export	1000   500   500   800 ;
+
+solve;
+option display_1col 0;
+display {p in PROD, a in AREA[p], t in 1..T} Sell [p,a,t];
+display {t in 1..T, p in PROD, a in AREA[p]} Sell[p,a,t];
+!!!
+
+echo '
+9.'
+$ampl_cmd <<!!!
+set ORIG;
+set DEST;
+set PROD;
+set ROUTES1 within {ORIG,DEST,PROD};
+
+data;
+
+set ORIG := GARY CLEV PITT ;
+set DEST := FRA DET LAN WIN STL FRE LAF ;
+set PROD := bands coils ;
+
+set ROUTES1 :=
+   (GARY,DET,bands) (GARY,LAN,bands) (GARY,LAN,coils) (GARY,STL,coils)
+   (GARY,LAF,coils) (CLEV,FRA,bands) (CLEV,FRA,coils)
+   (CLEV,DET,bands) (CLEV,LAN,bands) (CLEV,LAN,coils) (CLEV,WIN,coils)
+   (CLEV,STL,bands) (CLEV,STL,coils) (CLEV,LAF,coils)
+   (PITT,FRA,bands) (PITT,WIN,bands) (PITT,STL,bands) (PITT,FRE,bands) ;
+display {p in PROD}:  {i in ORIG, j in DEST: (i,j,p) in ROUTES1};
+display {p in PROD}: {(i,j,p) in ROUTES1};
+display {i in ORIG, p in PROD}:{j in DEST: (i,j,p) in ROUTES1};
+!!!
+
+echo '
+11.'
+$ampl_cmd <<!!!
+model multmip1.mod
+data multmip1.dat
+option solver cplex;
+solve;
+!!!
+
+echo '
+12.'
+$ampl_cmd <<!!!
+param N;set I := 1..N;let N := 3;display I; print N;
+!!!
+
+echo '
+34.'
+$ampl_cmd <<!!!
+model diet.mod
+data diet.dat
+reset data;
+data diet.dat
+solve;
+!!!
+
+echo '
+35.'
+$ampl_cmd <<!!!
+var x{1..2} := 1;
+var y{1..2} >= 0  := sqrt(.5);
+circle: sum{i in 1 .. 2} y[i]^2 = 1;
+var z = x[1]*x[2]^2 + 1;
+minimize zot: (z - 5)^2 + (x[1]-2)^2;
+drop circle;
+solve;
+display x, z;
+fix y[1];
+fix x[1];
+solve;
+display x, z;
+!!!
+
+echo '
+36.'
+$ampl_cmd <<!!!
+set A ordered;
+var x{A} >= 0 <= 10;
+minimize zip: sum{i in A} ord(i)*x[i];
+var y{i in A: i != last(A)} = x[i] + x[next(i)];
+s.t. zot{i in A: i != last(A)}: y[i] = 1;
+data;
+set A := a b c d;
+solve;
+display x;
+reset data A;
+data;
+set A := g h i j;
+drop{i in {'g','h'}} zot[i];
+solve;
+display x;
+!!!
+
+echo '
+37.'
+$ampl_cmd <<!!!
+model net1node.mod;
+data net1.dat;
+solve;
+reset data;
+data net1.dat;
+solve;
+!!!
+
+echo '
+38.'
+$ampl_cmd <<!!!
+display sum {i in 1..2: 0==1} i;
+for{j in 1..3}
+	display sum{i in 1..2: j == 2} i;
+!!!
+
+echo '
+40.2'
+$ampl_cmd <<!!!
+#variation of 40.
+
+set Nodes ordered;
+set Links within Nodes cross Nodes cross Nodes default Nodes cross Nodes cross Nodes;
+
+var transport {Links} >= 0;
+
+minimize Cost{a in Nodes, b in Nodes} : transport [a, b, first(Nodes)];
+
+subject to Satisfy {a in Nodes, b in Nodes}:
+ transport [a, b, first(Nodes)] = 10;
+
+problem Sub {a in Nodes, b in Nodes}:
+  transport [a, b, first(Nodes)], Cost [a, b], Satisfy [a, b];
+
+data;
+set Nodes :=  A B C D;
+model;
+
+printf "This first loop works:\n";
+for {(a, b, c) in Links}
+     printf "%s %s %s\n", a, b, c;
+
+printf "this second loop including solve used to break:\n";
+for {(a, b, first(Nodes)) in Links}
+{
+  printf "%s %s\n", a, b;
+
+  solve Sub [a, b];
+
+  printf "result : %f\n", transport [a, b, first(Nodes)];
+
+}
+!!!
+
+echo '
+41.'
+$ampl_cmd <<!!!
+var x{i in 1..2} := i;
+function mean;
+minimize zot: mean({i in 1..2}x[i], if x[1] > 3 then 'abc' else 'def');
+option solve_exitcode_max 1024;
+solve;  # minos should complain about mean not being available,
+	# rather than ampl faulting
+option solve_exitcode_max $$solve_exitcode_max;
+!!!
+
+echo '
+42.'
+$ampl_cmd <<!!!
+set VERTEX;
+param root symbolic in VERTEX;
+param parent {VERTEX diff {root}} symbolic in VERTEX default root;
+
+param depth {i in VERTEX} :=
+  if i = root then 0
+	      else 1 + depth [parent[i]] ;
+
+# lowest common ancestor in the tree.
+param lca{i in VERTEX, j in VERTEX} symbolic in VERTEX :=
+  if i=j then i
+  else if i=root or j=root then root
+  else if depth[i]>depth[j] then lca[parent[i],j]
+  else lca[i,parent[j]] ;
+
+set lca_set{i in VERTEX, j in VERTEX} within VERTEX :=
+  if i=j then {i}
+  else if i=root or j=root then {root}
+  else if depth[i]>depth[j] then lca_set[parent[i],j]
+  else lca_set[i,parent[j]] ;
+
+data;
+param: VERTEX:  parent :=
+	1       .
+	2       1
+	3       2
+	4       5
+	5       2
+	6       5  ;
+
+param root := 1;
+display lca_set[1,1];
+!!!
+
+echo '
+43.'
+$ampl_cmd -vi1 <<!!!
+# stoch2.mod
+# ----------------------------------------
+# STOCHASTIC PROGRAMMING PROBLEM
+# USING BENDERS DECOMPOSITION
+# ----------------------------------------
+
+### SUBPROBLEM FOR EXTREME POINT ###
+
+set PROD;     # products
+param T > 0;  # number of weeks
+set SCEN;     # number of scenarios
+
+param scenario symbolic in SCEN;	# current subproblem scenario
+param rate {PROD} > 0;          # tons per hour produced
+param avail {1..T} >= 0;        # hours available in week
+param market {PROD,1..T} >= 0;  # limit on tons sold in week
+
+param prodcost {PROD} >= 0;     # cost per ton produced
+param invcost {PROD} >= 0;      # carrying cost/ton of inventory
+
+param revenue {PROD,1..T,SCEN} >= 0;  # projected revenue/ton
+
+param prob {SCEN} >= 0, <= 1;
+   check: 0.99999 < sum {s in SCEN} prob[s] < 1.00001;
+
+param inv1 {PROD} >= 0;  # inventory at end of first period
+
+var Make {PROD,2..T,SCEN} >= 0;        # tons produced
+var Inv {PROD,2..T,SCEN} >= 0;         # tons inventoried
+var Sell {p in PROD, t in 2..T, SCEN}  # tons sold
+   >= 0, <= market[p,t];
+
+maximize Stage2_Profit:
+   prob[scenario] *
+      sum {p in PROD, t in 2..T} (revenue[p,t,scenario]*Sell[p,t,scenario] -
+         prodcost[p]*Make[p,t,scenario] - invcost[p]*Inv[p,t,scenario]);
+
+subject to Time {t in 2..T}:
+   sum {p in PROD} (1/rate[p]) * Make[p,t,scenario] <= avail[t];
+
+subject to Balance2 {p in PROD}:
+   Make[p,2,scenario] + inv1[p] = Sell[p,2,scenario] + Inv[p,2,scenario];
+
+subject to Balance {p in PROD, t in 3..T}:
+   Make[p,t,scenario] + Inv[p,t-1,scenario] = Sell[p,t,scenario] +
+							Inv[p,t,scenario];
+
+### MASTER PROBLEM ###
+
+param inv0 {PROD} >= 0;  # initial inventory
+
+param nCUT >= 0 integer;
+param cut_type {1..nCUT} symbolic within {"point","ray"};
+
+param time_price {2..T,SCEN,1..nCUT} >= -0.000001;
+param bal2_price {PROD,SCEN,1..nCUT};
+param sell_lim_price {PROD,2..T,SCEN,1..nCUT} >= -0.000001;
+
+var Make1 {PROD} >= 0;
+var Inv1 {PROD} >= 0;
+var Sell1 {p in PROD} >= 0, <= market[p,1];
+
+var Min_Stage2_Profit >= 0;
+
+maximize Expected_Profit:
+   sum {s in SCEN} prob[s] *
+     sum {p in PROD} (revenue[p,1,s]*Sell1[p] -
+        prodcost[p]*Make1[p] - invcost[p]*Inv1[p])
+   + Min_Stage2_Profit;
+
+subj to Cut_Defn {k in 1..nCUT}:
+   if cut_type[k] = "point" then Min_Stage2_Profit <=
+      sum {t in 2..T, s in SCEN} time_price[t,s,k] * avail[t] +
+      sum {p in PROD, s in SCEN} bal2_price[p,s,k] * (-Inv1[p]) +
+      sum {p in PROD, t in 2..T, s in SCEN}
+         sell_lim_price[p,t,s,k] * market[p,t];
+
+subject to Time1:
+   sum {p in PROD} (1/rate[p]) * Make1[p] <= avail[1];
+
+subject to Balance1 {p in PROD}:
+   Make1[p] + inv0[p] = Sell1[p] + Inv1[p];
+data;# stoch2.run
+# ----------------------------------------
+# STOCHASTIC PROGRAMMING PROBLEM
+# USING BENDERS DECOMPOSITION
+# ----------------------------------------
+
+model /tmp/stoch2.mod;
+data stoch.dat;
+
+option solver minos;
+
+option omit_zero_rows 1;
+option display_eps .000001;
+
+problem Master: Make1, Inv1, Sell1, Min_Stage2_Profit,
+   Expected_Profit, Cut_Defn, Time1, Balance1;
+
+option presolve 10;
+
+problem Sub: Make, Inv, Sell, Stage2_Profit, Time, Balance2, Balance;
+param sub_profit {SCEN};
+param tmp_time_price {2..T,SCEN,1..nCUT+1};
+param tmp_bal2_price {PROD,SCEN,1..nCUT+1};
+param tmp_sell_lim_price {PROD,2..T,SCEN,1..nCUT+1};
+
+option presolve 0;
+
+let nCUT := 0;
+let Min_Stage2_Profit := Infinity;
+let {p in PROD} inv1[p] := 0;
+
+param GAP default Infinity;
+
+for {1..50} { printf "\nITERATION %d\n\n", nCUT+1;
+
+   for {s in SCEN} {
+	let scenario := s;
+	solve Sub;
+	let sub_profit[s] := Stage2_Profit;
+	let {t in 2..T} tmp_time_price[t,s,nCUT+1] := Time[t].dual;
+	let {p in PROD} tmp_bal2_price[p,s,nCUT+1] := Balance2[p].dual;
+	let {p in PROD, t in 2..T} tmp_sell_lim_price[p,t,s,nCUT+1] :=
+		Sell[p,t,s].urc;
+	}
+
+   printf "\n";
+
+   if (sum {s in SCEN} sub_profit[s]) < Min_Stage2_Profit - 0.00001 then {
+      let GAP := min (GAP, (Min_Stage2_Profit - sum{s in SCEN} sub_profit[s]));
+      option display_1col 0;
+      display GAP, Make, Sell, Inv;
+      let nCUT := nCUT + 1;
+      let cut_type[nCUT] := "point";
+      let {t in 2..T, s in SCEN} time_price[t,s,nCUT] :=
+		tmp_time_price[t,s,nCUT];
+      let {p in PROD, s in SCEN} bal2_price[p,s,nCUT] :=
+		tmp_bal2_price[p,s,nCUT];
+      let {p in PROD, t in 2..T, s in SCEN}
+         sell_lim_price[p,t,s,nCUT] := tmp_sell_lim_price[p,t,s,nCUT];
+      }
+   else break;
+
+   printf "\nRE-SOLVING MASTER PROBLEM\n\n";
+
+   solve Master;
+   printf "\n";
+   option display_1col 20;
+   display Make1, Inv1, Sell1;
+
+   let {p in PROD} inv1[p] := Inv1[p];
+}
+
+printf "\nOPTIMAL SOLUTION FOUND\nExpected Profit = %f\n\n", Expected_Profit;
+option display_1col 0;
+
+param MAKE {p in PROD, t in 1..T, s in SCEN}
+   := if t = 1 then Make1[p].val else Make[p,t,s].val;
+param SELL {p in PROD, t in 1..T, s in SCEN}
+   := if t = 1 then Sell1[p].val else Sell[p,t,s].val;
+param INV {p in PROD, t in 1..T, s in SCEN}
+   := if t = 1 then Inv1[p].val else Inv[p,t,s].val;
+
+for {s in SCEN} {
+   printf "SCENARIO %s\n", s;
+   display {p in PROD, t in 1..T}
+      (MAKE[p,t,s], SELL[p,t,s], INV[p,t,s]);
+   }
+
+# stoch.dat
+# ----------------------------------------
+# STOCHASTIC PROGRAMMING DATA
+# ----------------------------------------
+
+param T := 4;
+set PROD := bands coils;
+set SCEN := BASE LOW HIGH ;
+
+param avail :=  1 40  2 40  3 32  4 40 ;
+
+param rate :=  bands 200   coils 140 ;
+param inv0 :=  bands  10   coils   0 ;
+
+param prodcost :=  bands 10    coils  11 ;
+param invcost  :=  bands  2.5  coils   3 ;
+
+param revenue
+   [*,*,BASE]:   1     2     3     4 :=
+       bands    25    26    27    27
+       coils    30    35    37    39
+
+    [*,*,LOW]:   1     2     3     4 :=
+       bands    23    24    25    25
+       coils    30    33    35    36
+
+   [*,*,HIGH]:   1     2     3     4 :=
+       bands    21    27    33    35
+       coils    30    32    33    33 ;
+
+param market:    1     2     3     4 :=
+       bands  2000  8500  6500  6500
+       coils  3000  2500  4500  4200 ;
+
+param prob :=  BASE  .45
+               LOW   .35
+               HIGH  .20 ;
+# stoch2.run
+# ----------------------------------------
+# STOCHASTIC PROGRAMMING PROBLEM
+# USING BENDERS DECOMPOSITION
+# ----------------------------------------
+
+# model /tmp/stoch2.mod;
+# data stoch.dat;
+
+option solver minos;
+
+option omit_zero_rows 1;
+option display_eps .000001;
+
+problem Master: Make1, Inv1, Sell1, Min_Stage2_Profit,
+   Expected_Profit, Cut_Defn, Time1, Balance1;
+
+option presolve 10;
+
+problem Sub: Make, Inv, Sell, Stage2_Profit, Time, Balance2, Balance;
+param sub_profit {SCEN};
+param tmp_time_price {2..T,SCEN,1..nCUT+1};
+param tmp_bal2_price {PROD,SCEN,1..nCUT+1};
+param tmp_sell_lim_price {PROD,2..T,SCEN,1..nCUT+1};
+
+option presolve 0;
+
+let nCUT := 0;
+let Min_Stage2_Profit := Infinity;
+let {p in PROD} inv1[p] := 0;
+
+param GAP default Infinity;
+
+for {1..50} { printf "\nITERATION %d\n\n", nCUT+1;
+
+   for {s in SCEN} {
+	let scenario := s;
+	solve Sub;
+	let sub_profit[s] := Stage2_Profit;
+	let {t in 2..T} tmp_time_price[t,s,nCUT+1] := Time[t].dual;
+	let {p in PROD} tmp_bal2_price[p,s,nCUT+1] := Balance2[p].dual;
+	let {p in PROD, t in 2..T} tmp_sell_lim_price[p,t,s,nCUT+1] :=
+		Sell[p,t,s].urc;
+	}
+
+   printf "\n";
+
+   if (sum {s in SCEN} sub_profit[s]) < Min_Stage2_Profit - 0.00001 then {
+      let GAP := min (GAP, (Min_Stage2_Profit - sum{s in SCEN} sub_profit[s]));
+      option display_1col 0;
+      display GAP, Make, Sell, Inv;
+      let nCUT := nCUT + 1;
+      let cut_type[nCUT] := "point";
+      let {t in 2..T, s in SCEN} time_price[t,s,nCUT] :=
+		tmp_time_price[t,s,nCUT];
+      let {p in PROD, s in SCEN} bal2_price[p,s,nCUT] :=
+		tmp_bal2_price[p,s,nCUT];
+      let {p in PROD, t in 2..T, s in SCEN}
+         sell_lim_price[p,t,s,nCUT] := tmp_sell_lim_price[p,t,s,nCUT];
+      }
+   else break;
+
+   printf "\nRE-SOLVING MASTER PROBLEM\n\n";
+
+   solve Master;
+   printf "\n";
+   option display_1col 20;
+   display Make1, Inv1, Sell1;
+
+   let {p in PROD} inv1[p] := Inv1[p];
+}
+
+printf "\nOPTIMAL SOLUTION FOUND\nExpected Profit = %f\n\n", Expected_Profit;
+option display_1col 0;
+
+param MAKE {p in PROD, t in 1..T, s in SCEN}
+   := if t = 1 then Make1[p].val else Make[p,t,s].val;
+param SELL {p in PROD, t in 1..T, s in SCEN}
+   := if t = 1 then Sell1[p].val else Sell[p,t,s].val;
+param INV {p in PROD, t in 1..T, s in SCEN}
+   := if t = 1 then Inv1[p].val else Inv[p,t,s].val;
+
+for {s in SCEN} {
+   printf "SCENARIO %s\n", s;
+   display {p in PROD, t in 1..T}
+      (MAKE[p,t,s], SELL[p,t,s], INV[p,t,s]);
+   }
+
+!!!
+
+echo '
+44.'
+$ampl_cmd <<!!!
+param j := 1;
+set T := 1..10; param x{T};
+let{t in T} x[t] := max(0, if j == 0 then t else 0.5*t);
+display x;	# all x components had the x[1]'s value (0.5).
+!!!
+
+echo '
+59.'
+$ampl_cmd <<!!!
+model diet.mod;
+set Ttype;
+set Handlers;
+
+table calories{t in Ttype} ('calories.' & t): [NUTR,FOOD] amt;
+
+table foods{t in Ttype} ('foods.' & t):
+	[FOOD] INOUT cost, f_min, f_max;
+
+table nutrients{t in Ttype} ('nutrients.' & t):
+	[NUTR] INOUT, n_min, n_max;
+
+data diet2a.dat;
+data; set Ttype := tab bit abt;
+set Handlers := simpbit.dll fullbit.dll;
+
+load simpbit.dll;
+write table {t in Ttype} calories[t];
+write table {t in Ttype} foods[t];
+write table {t in Ttype} nutrients[t];
+unload simpbit.dll;
+
+for {h in Handlers} {
+	load (h);
+	for{t in Ttype} {
+		if h == 'fullbit.dll' && t == 'abt' then break;
+		display h, t;
+		reset data amt, cost, f_min, f_max, n_min, n_max;
+		read table calories[t];	# will abort on (fullbit.dll, abt)
+		read table foods[t];
+		read table nutrients[t];
+		solve;
+		display Buy;
+		}
+	unload (h);
+	}
+!!!
+
+echo '
+73.1'
+# bug revealed in timing example of sjf (received 15 July 2002)
+$ampl_cmd <<\!!!
+set A; set I := 1..10;
+param p{A} default 0;
+param q default 0;
+var x{A}; var y;
+minimize o: sum{i in A} x[i] + y; # so _var works with "fax"
+suffix zap;
+data; set A :=  a b c;
+let{i in I} p['b'] := p['b'] + 1;
+let{i in I} x['b'] := x['b'] + 1;
+let{i in I} x['b'].zap := x['b'].zap + 1;
+display p, x, x.zap;
+let{i in I} _var[2].zap := _var[2].zap + 1;
+let{i in I} y.zap := y.zap + 1;
+display _varname, _var.zap;
+!!!
+
+echo '
+73.2'
+# bug revealed in timing example of sjf (received 15 July 2002)
+$ampl_cmd <<\!!!
+set A; set I := 1..10;
+param p{A} default 0;
+param q default 0;
+var x{A}; var y;
+suffix zap;
+data; set A :=  a b c;
+let{i in I} p['b'] := p['b'] + 1;
+let{i in I} x['b'] := x['b'] + 1;
+let{i in I} x['b'].zap := x['b'].zap + 1;
+display p, x, x.zap;
+minimize zot: x['a']^2 + y;	# use x and y
+let{i in I} _var[2].zap := _var[2].zap + 1;
+let{i in I} y.zap := y.zap + 1;
+display _varname, _var.zap;
+!!!
+
+echo '
+74.'
+# bug reported by bwk 20020813
+$ampl_cmd <<\!!!
+param N := 100;
+param odd {i in 1..N} :=
+	if i = 1 then 3 else
+		min {j in odd[i-1]+2..odd[i-1]*2 by 2:
+			not exists {k in 1..i-1} j mod odd[k] = 0} j;
+display odd;
+!!!
+
+echo '
+75.'
+# bugs with iterated printf
+$ampl_cmd <<\!!!
+param factorial{i in Integers} integer =
+	if i <= 0 then 1 else i*factorial[i-1];
+display{i in 1..4} factorial[i];
+printf {i in 1..2} "%d\n", i;
+!!!
+
+echo '
+76.'
+# bug with unused defined variables
+$ampl_cmd <<\!!!
+var x;
+var g = x^3 - x^2 - x - 1;
+var gp = 3*x^2 - 2*x - 1;
+let x := 2;
+display x, g, gp; # OK
+let x := x - g/gp;
+display x,g;	# botched
+!!!
+
+echo '
+77.'
+# bug in version 20080616 with nonlin defined variables in objective and constraints
+$ampl_cmd <<\!!!
+set I = 1..2;
+var x{I} := 1;
+var y{i in I} = x[i]^2 + i;
+minimize zot: sum{i in I} (y[i] - 4)^2;
+s.t. foo: sum{i in I} y[i] <= 7;
+solve;
+!!!
+
+echo '
+78.'
+# bug with "update data" introduced 20060905 and fixed 20080803
+$ampl_cmd <<\!!!
+set I = 1..2; var x{I}; param p{I};
+minimize zot: sum{i in I} (x[i] - p[i])^2;
+data; param p := 1 1  2 2;
+solve;  update data;
+data;  param p := 2 5;
+print sum{i in I} (x[i] + p[i]); # printed 6 rather than 9
+!!!
+
+echo '
+79.'
+# bugs with var in union of intervals and piecewise-linear terms fixed 20100914
+$ampl_cmd <<\!!!
+var x in interval[10,15] union interval[25,30] union interval[50,60];
+param np integer;
+param p{1..np};
+data;
+param np := 5;
+param p := 1 3  2 12  3 27  4 56  5 80;
+
+minimize zot{i in 1..np}: <<p[i]; -1,1>> x;
+
+option solver cplex, nl_comments 1;
+for{i in 1..np} {
+	objective zot[i];
+	solexpand;
+	solve;
+	display x;
+	}
+!!!
+
+echo '
+80.'
+# no value for p[3]
+$ampl_cmd <<\!!!
+set A ordered;
+param no;
+param p{A};
+param q{i in A: i != no} = p[i]*(p[i] + 1);
+data;
+set A := 1 2 3 4;
+param no := 3;
+param p := 1 3 2 7 4 11;
+display q;
+param r{A,A};
+for{i in A} {
+	for{j in A}
+		let r[i,j] := 100*j + i^2;
+	}
+display r;
+for{i in A} {
+	print i, p[i], q[i], ord(i), ord(i,A);
+	display i, p[i], q[i], ord(i), ord(i,A);
+	print i, p[i], q[i], ord(i), ord(i,A);
+	print 'End of loop with i =', i;
+	}
+!!!
+
+echo '
+114.'
+# redeclaration of defined variable
+$ampl_cmd <<\!!!
+# exercise close, shell, show, solution, write, add, unfix, reset problem
+# commands, data, drop all, restore all, show objective, environ, call, cd
+# /*current*/environ, /*current*/ problem, xref, remove, sleep, reload
+# repeat, continue, reset option /*within braces*/, {...}, delete, purge
+# break, break all, check, reset suffix, reset function
+
+# not tested: exit
+
+var x;
+var y;
+s.t. yb: y <= 3;
+minimize o: (y - 4)^2 + (x-y)^2;
+write gzap;
+shell 'minos zap wantsol=1';
+solution zap.sol;
+display x,y;
+remove zap.nl, zap.sol;
+for{i in 1..2}{
+drop yb;
+fix y := i;
+solve;
+display x,y;
+if i >= 2 then break;
+unfix y;
+option solver snopt;
+solve;
+display x,y;
+reset problem;
+solve;
+display x,y;
+option solver;
+reset options;
+option solver;
+sleep .2;
+}
+objective;
+param k <= 5 default 0;
+repeat {
+	add yb;
+	solve;
+	display x,y;
+	if k >= 2 then break all;
+	fix y := k;
+	solve;
+	display x,y;
+	unfix y;
+	solve;
+	display x,y;
+	let k := k + 1;
+	if k >= 2 then continue;
+	display k;
+	}
+check;
+print 'solve; display x,y;' >zap;
+close zap;
+commands zap;
+remove zap;
+show x, yb;
+xref x;
+environ foo;
+option solver snopt;
+solve;
+environ;
+environ Initial;
+option solver;
+function foo pipe "awk '{print $1+2}'";
+display foo(3), foo(5);
+reset function;
+display foo(6);
+reset data foo;
+display foo(47);
+function ncall;
+display ncall();
+call ncall;
+display ncall();
+cd .;
+cd;
+reload;
+display ncall();
+drop all;
+drop;
+restore all;
+restore;
+reset;
+!!!
+
+echo '
+119'
+$ampl_cmd -vi1 <<!!!
+var x{i in {(1, 2), (3, 'abc')}} >= i;
+minimize zot: sum{(i,j) in {(1, 2), (3, 'abc')}} x[i,j]^2;
+print 'Omitted line';
+solve;
+display x;
+!!!

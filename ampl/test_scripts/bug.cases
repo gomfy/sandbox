@@ -1,7 +1,8 @@
 #!/bin/sh
 ampl_cmd=${1:-ax}
 
-echo  '1. (invalid subscript msg)'
+echo '
+1.'
 $ampl_cmd <<!!!
 param N integer > 0;
 param p{i in 1..N} :=  p[10];

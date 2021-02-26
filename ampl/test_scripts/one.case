@@ -1,0 +1,12 @@
+#!/bin/sh
+ampl_cmd=${1:-ax}
+
+echo '
+1.'
+$ampl_cmd <<!!! 2>&1 | md5sum
+param N integer > 0;
+param p{i in 1..N} :=  p[10];
+data;
+param N := 7;
+display p;
+!!!
