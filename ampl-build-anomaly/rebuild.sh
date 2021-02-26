@@ -26,7 +26,9 @@ elif [[ $1 == 'msvc' ]]; then
 		cmake --build . -v
 	fi
 else
-	printf "Need to specify compiler: mingw or msvc\n"
+    printf "Running w/ default system settings\n"
+	cmake .. 
+    cmake --build . -v
 	exit 2
 fi
 
