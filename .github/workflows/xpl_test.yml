@@ -25,6 +25,11 @@ jobs:
     steps:
       - name: Setup actions checkout
         uses: actions/checkout@v2
+    
+      - name: Install bash on MacOS
+        if: runner.os == 'macOS'
+        run: |
+            brew install bash
 
       - name: Check for md5
         run: |
