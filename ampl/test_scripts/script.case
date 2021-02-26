@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Author(s): 	David M. Gay <dmg@ampl.com>,
+#               Gyorgy Matyasfalvi <matyasfalvi@ampl.com>, 
+#		        Marcos Dominguez <marcos@ampl.com>
+
+#
+# Description: 	Test script that runs a set of numbered tests based on Dave's original tests. 
+#               
+
+
+# Load user defined variables and functions
+source ./functions.sh
+
+ampl_cmd=${1:-cat}
+get_md5 md5_cmd
+
+echo '
+1.'
+$ampl_cmd <<!!! 2>&1 | tee out | $md5_cmd | tee -a hash.out
+param N integer > 0;
+param p{i in 1..N} :=  p[10];
+data;
+param N := 7;
+display p;
+!!!

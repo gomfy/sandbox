@@ -29,5 +29,5 @@ jobs:
       - name: Check for md5
         run: |
             cd ampl/test_scripts/
-            $MD5 one.case
+            ./script.case
         shell: bash {0}
