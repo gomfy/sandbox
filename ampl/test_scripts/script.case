@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-echo $BASH_VERSION
 
 # Author(s): 	David M. Gay <dmg@ampl.com>,
 #               Gyorgy Matyasfalvi <matyasfalvi@ampl.com>, 
 #		        Marcos Dominguez <marcos@ampl.com>
-
 #
 # Description: 	Test script that runs a set of numbered tests based on Dave's original tests. 
 #               
@@ -12,16 +10,48 @@ echo $BASH_VERSION
 
 # Load user defined variables and functions
 source ./functions.sh
-
 ampl_cmd=${1:-cat}
+hash_file="$0.$ampl_cmd.hash"
+time_file="$0.$ampl_cmd.time"
+
+# Depending on OS define MD5 command
 get_md5 md5_cmd
 
-echo '
-1.'
-$ampl_cmd <<!!! 2>&1 | tee out | $md5_cmd | tee -a hash.out
+test_id=1
+test_tag="subscript-error"
+$ampl_cmd <<!!! 2>&1 | $md5_cmd | awk -v id="id:$test_id" -v tag="tag:$test_tag" '{ print id"\t"tag"\thash:"$1 }' | tee $hash_file
+param sum_solve_time >= 0;
+let sum_solve_time := 0;
 param N integer > 0;
 param p{i in 1..N} :=  p[10];
 data;
 param N := 7;
-display p;
+display N;
+printf "id:$test_id\ttag:$test_tag\tampl_time:%f\tsum_solve_time:%f\n", _ampl_time, sum_solve_time>$time_file;
+!!!
+
+test_id=2
+test_tag=" "
+$ampl_cmd <<!!! 2>&1 | $md5_cmd | awk -v id="id:$test_id" -v tag="tag:$test_tag" '{ print id"\t"tag"\thash:"$1 }' | tee -a $hash_file
+param sum_solve_time >= 0;
+let sum_solve_time := 0;
+param N integer > 0;
+param p{i in 1..N} :=  p[10];
+data;
+param N := 8;
+display N;
+printf "id:$test_id\ttag:$test_tag\tampl_time:%f\tsum_solve_time:%f\n", _ampl_time, sum_solve_time>>$time_file;
+!!!
+
+test_id=3
+test_tag="subscript-error"
+$ampl_cmd <<!!! 2>&1 | $md5_cmd | awk -v id="id:$test_id" -v tag="tag:$test_tag" '{ print id"\t"tag"\thash:"$1 }' | tee -a $hash_file
+param sum_solve_time >= 0;
+let sum_solve_time := 0;
+param N integer > 0;
+param p{i in 1..N} :=  p[10];
+data;
+param N := 8;
+display N;
+printf "id:$test_id\ttag:$test_tag\tampl_time:%f\tsum_solve_time:%f\n", _ampl_time, sum_solve_time>>$time_file;
 !!!

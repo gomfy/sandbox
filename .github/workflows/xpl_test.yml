@@ -35,4 +35,5 @@ jobs:
         run: |
             cd ampl/test_scripts/
             ./script.case
+            cat script.case.cat.time
         shell: bash {0}
