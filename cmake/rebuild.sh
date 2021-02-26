@@ -13,16 +13,15 @@ if [[ $1 == 'mingw' ]]; then
 		cmake --build . -v
 	fi
 elif [[ $1 == 'msvc' ]]; then
-	if [[ $2 == 'fix' ]]; then
-		if [[ $3 == 'cpp' ]]; then
+	if [[ $2 == 'cpp' ]]; then
+		if [[ $3 == 'fix' ]]; then
 			cmake .. -DFIX=ON -DCPLUSPLUS=ON
 			cmake --build . -v
 		else
-			cmake .. -DFIX=ON
+			cmake .. -DCPLUSPLUS=ON
 			cmake --build . -v
 		fi
 	else
-		printf "Building with msvc without fix\n"
 		cmake ..
 		cmake --build . -v
 	fi
