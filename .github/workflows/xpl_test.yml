@@ -7,16 +7,16 @@ name: Cross platform tests
 
 jobs:
   run:
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+    name: ${{ matrix.config.os }} 
     runs-on: ${{ matrix.config.os }}
 
     strategy:
       fail-fast: false
       matrix:
         config:
-          - {os: windows-latest, r: 'release', md5: "md5sum"}
-          - {os: macOS-latest, r: 'release', md5: "md5"}
-          - {os: ubuntu-16.04, r: 'release', md5: "md5sum"}
+          - {os: windows-latest, md5: "md5sum"}
+          - {os: macOS-latest, md5: "md5"}
+          - {os: ubuntu-16.04, md5: "md5sum"}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
