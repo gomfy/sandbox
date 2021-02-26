@@ -22,11 +22,12 @@ elif [[ $1 == 'msvc' ]]; then
 			cmake --build . -v
 		fi
 	else
+		printf "Building with msvc without fix\n"
 		cmake ..
 		cmake --build . -v
 	fi
 else
-	echo "Need to specify compiler: mingw or msvc"
+	printf "Need to specify compiler: mingw or msvc\n"
 	exit 2
 fi
 

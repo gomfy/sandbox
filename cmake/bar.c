@@ -1,6 +1,6 @@
 #include "bar.h"
 
-#ifdef __cplusplus
+#if defined(FIX) && defined(__cplusplus)
 extern "C" int g1;
 #else
 extern int g1;
