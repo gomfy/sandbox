@@ -12,14 +12,31 @@
 source ./functions.sh
 ampl_cmd=${1:-cat}
 hash_file="$0.$ampl_cmd.hash"
+printf "hash_file:$hash_file\n"
 time_file="$0.$ampl_cmd.time"
+printf "time_file:$time_file\n"
+
+id_string="id:$test_id"
+tag_string="tag:$test_tag"
+
+redirect_cmd="2>&1"
+pipe_cmd="|"
 
 # Depending on OS define MD5 command
 get_md5 md5_cmd
 
+#awk_cmd="awk -v id=id:$test_id -v tag=tag:$test_tag '{ print id"\""\t"\""tag"\""\thash"\""$1 }'"
+awk_cmd=("awk" "'{ print $1 }'")
+
+tee_cmd="tee $hash_file"
+#hash_cmd=("$redirect_cmd" "$pipe_cmd" "$md5_cmd" "$pipe_cmd" "$awk_cmd" "$pipe_cmd" "$tee_cmd")
+hash_cmd=("$md5_cmd" "$pipe_cmd" "$awk_cmd" "$pipe_cmd" "$tee_cmd")
+ 
+
 test_id=1
 test_tag="subscript-error"
-$ampl_cmd <<!!! 2>&1 | $md5_cmd | awk -v id="id:$test_id" -v tag="tag:$test_tag" '{ print id"\t"tag"\thash:"$1 }' | tee $hash_file
+printf "$test_id: $test_tag\n"
+$ampl_cmd <<!!! 2>&1 | "$md5_cmd" | "${awk_cmd[@]}"
 param sum_solve_time >= 0;
 let sum_solve_time := 0;
 param N integer > 0;
@@ -29,6 +46,8 @@ param N := 7;
 display N;
 printf "id:$test_id\ttag:$test_tag\tampl_time:%f\tsum_solve_time:%f\n", _ampl_time, sum_solve_time>$time_file;
 !!!
+
+exit 0
 
 test_id=2
 test_tag=" "

@@ -17,6 +17,7 @@
 #               7. comparation_single 
 #               8. run_ampl_pair
 #               9. run_ampl_pair
+# TODO come up with more intuitive names for above
 #               10. get_md5
 
 # Define return codes at the beginning
