@@ -46,6 +46,7 @@ printf "\nUSAGE:\n"
 printf "\t $(basename $0) [-d] [-e] [-o] [-q] [-r] [-t] [-v] [-x] EXEC1 EXEC2 ...\n"
 printf "\t -d:           .\n"
 printf "\t -e:           .\n"
+printf "\t -g:           Specify debug executable (default: ax)\n"
 printf "\t -o:           Output directory.\n"
 printf "\t -q #:         Size threshold flag where # is an integer.\n"
 printf "\t               If (max size / min size) > # size test fails.\n"
@@ -112,7 +113,7 @@ arrange_args() {
 #   1. EXEC_ARRAY
 #   2. NUM_EXEC
 parse_args() {
-    local optstr=d:e:o:q:rt:vx
+    local optstr=d:e:g:o:q:rt:vx
    
     # Define: 
     # return codes, verbose mode, nix-exit mode,
@@ -124,12 +125,16 @@ parse_args() {
     EXEC_ARRAY=("ampl" "ax") # TODO redo this initialization
     NUM_EXEC=2
     VALID_EXEC_ARRAY=()
+    DEBUG_EXEC="ax"
     NUM_VALID_EXEC=0
     NO_TEST_MESSAGE=()
     NUM_NO_TEST=0
     # Size threshold variable
-    # for eeded for run_size_tests.sh script
-    SIZE_THRESH=3
+    # needed for run_size_tests.sh script
+    SIZE_THRESH=3 # TODO modify this to also allow for floating point
+    # Speed thershold variable
+    # need for run_output_tests.sh script
+    SPEED_THRES=1.1
     # For nl testing
     TARGET_DIR='.'
     OUTPUT_DIR="testout"
@@ -148,6 +153,7 @@ parse_args() {
         case $opt in
             d        ) TARGET_DIR=${OPTARG} ;;
             e        ) FILE_EXPRESSION=${OPTARG} ;;
+            g        ) DEBUG_EXEC=${OPTARG} ;;
             o        ) OUTPUT_DIR=${OPTARG} ;;
             q        ) SIZE_THRESH=$OPTARG ;;
             r        ) REMOVE_FLAG=true ;;
@@ -380,4 +386,3 @@ get_md5() {
             exit $EXIT_FAILURE
     fi
 }
-
