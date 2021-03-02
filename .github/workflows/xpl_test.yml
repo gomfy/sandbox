@@ -31,9 +31,10 @@ jobs:
         run: |
             brew install bash
 
-      - name: Check for md5
+      - name: Run tests
         run: |
             cd ampl/test_scripts/
-            ./script.case
-            cat script.case.cat.time
+            ./run_output_tests.sh echo cat cat echo -v
+            cd testout/
+            ls | awk '{ print $1; system("cat " $1) }'
         shell: bash {0}

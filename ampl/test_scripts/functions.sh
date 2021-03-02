@@ -16,9 +16,9 @@
 #               6. compare_nl
 #               7. comparation_single 
 #               8. run_ampl_pair
-#               9. run_ampl_pair
+#               9. comparation_pair
 # TODO come up with more intuitive names for above
-#               10. get_md5
+#              10. get_md5
 
 # Define return codes at the beginning
 EXIT_SUCCESS=0
@@ -26,10 +26,15 @@ EXIT_FAILURE=134
 
 #Function: print_error
 print_error() {
-        printf "ERROR in function '%s' at line %d." "${FUNCNAME[1]}" "${BASH_LINENO[0]}"
+        printf "ERROR:\n" 
+        printf "\tfile:     \t%s\n" "$(basename $0)"
+        printf "\tfunction: \t%s\n" "${FUNCNAME[1]}"
+        printf "\tline:     \t%d\n" "${BASH_LINENO[0]}"
 }
 
 
+# TODO  clean up options (e.g. no need for -x) 
+#       add more info (e.g. description but also default options.)
 # Function: print_usage
 # Print usage related information
 # Input: 
@@ -37,15 +42,22 @@ print_error() {
 # Sets variables:
 #   N/A
 print_usage() {
-printf "\nUsage: $0 [-v] [-q #] EXEC1 EXEC2 ...\n"
-printf "\t -v:           Verbose flag.\n"
-printf "\t -x:           Nix-exit flag.\n"
+printf "\nUSAGE:\n"
+printf "\t $(basename $0) [-d] [-e] [-o] [-q] [-r] [-t] [-v] [-x] EXEC1 EXEC2 ...\n"
+printf "\t -d:           .\n"
+printf "\t -e:           .\n"
+printf "\t -o:           Output directory.\n"
 printf "\t -q #:         Size threshold flag where # is an integer.\n"
 printf "\t               If (max size / min size) > # size test fails.\n"
+printf "\t -r:           .\n"
+printf "\t -t:           .\n"
+printf "\t -v:           Verbose flag.\n"
+printf "\t -x:           Nix-exit flag.\n"
 printf "\t EXEC1,EXEC2:  AMPL executables to be tested.\n"
 printf "\t               Default: ampl and ax.\n"
-printf "\t Note! At least two valid executables have to be specified\n"
-printf "\t as tests are comparison based.\n"
+printf "\nINFO:\n"
+printf "\tFor 'run_*' tests at least two valid executables have to be specified\n"
+printf "\tFor '*.cases' tests at least one valid executable has to specified.\n"
 }
 
 # Function: arrange_args 
@@ -84,7 +96,7 @@ arrange_args() {
         shift
     done
 
-    # Define variable that holds rearranged argumetns
+    # Define variable that holds rearranged arguments
     # options and values first then AMPL_EXEC-s
     OPTARR=("${flags[@]}" "${args[@]}")
 }
@@ -100,8 +112,8 @@ arrange_args() {
 #   1. EXEC_ARRAY
 #   2. NUM_EXEC
 parse_args() {
-    local optstr=vxq:
-    
+    local optstr=d:e:o:q:rt:vx
+   
     # Define: 
     # return codes, verbose mode, nix-exit mode,
     # array of executables, number of executables,
@@ -109,7 +121,7 @@ parse_args() {
     # array of no-test messages, number of no-test messages
     VERBOSE_MODE=false
     NIXEXIT_MODE=false
-    EXEC_ARRAY=("ampl" "ax")
+    EXEC_ARRAY=("ampl" "ax") # TODO redo this initialization
     NUM_EXEC=2
     VALID_EXEC_ARRAY=()
     NUM_VALID_EXEC=0
@@ -117,28 +129,37 @@ parse_args() {
     NUM_NO_TEST=0
     # Size threshold variable
     # for eeded for run_size_tests.sh script
-    SIZE_THRESH=2
-    # MD5 hash function to use
-    MD5=sum
+    SIZE_THRESH=3
+    # For nl testing
+    TARGET_DIR='.'
+    OUTPUT_DIR="testout"
+    REMOVE_FLAG=false
+    FILE_EXPRESSION=""
+    RUN_TEST="all"
 
     arrange_args "$optstr" "$@"
     # turn off option processing for arguments
     # OPTARR is defined in arrange_args() 
     set -- "${OPTARR[@]}"
-    
+   
     # Process options
     OPTIND=1
     while getopts "$optstr" opt; do
         case $opt in
+            d        ) TARGET_DIR=${OPTARG} ;;
+            e        ) FILE_EXPRESSION=${OPTARG} ;;
+            o        ) OUTPUT_DIR=${OPTARG} ;;
+            q        ) SIZE_THRESH=$OPTARG ;;
+            r        ) REMOVE_FLAG=true ;;
+            t        ) RUN_TEST=${OPTARG} ;;
             v        ) VERBOSE_MODE=true ;; 
             x        ) NIXEXIT_MODE=true ;; 
-            q        ) SIZE_THRESH=$OPTARG ;;
-            \?       ) print_usage 
+            \?       ) print_usage
                        exit $EXIT_FAILURE ;;
         esac
     done
     shift $((OPTIND-1))
-    
+   
     # Define array of executables that will be tested
     # $@ is stripped of all valid options
     if [ "$#" -ne 0 ]; then
@@ -146,19 +167,21 @@ parse_args() {
     fi
     NUM_EXEC=${#EXEC_ARRAY[@]}
 
+    # TODO Move this test to scripts where it matters
     # Check to make sure we have at least two executables
-    if (( NUM_EXEC <= 1 ));
-    then
-        print_error
-        print_usage
-        exit $EXIT_FAILURE
-    fi
+    #if (( NUM_EXEC <= 1 ));
+    #then
+    #    print_error
+    #    print_usage
+    #    exit $EXIT_FAILURE
+    #fi
 
     # Check if executables are in PATH  
     for (( i=0; i<$NUM_EXEC; i++ )); 
     do
-    	ex=${EXEC_ARRAY[$i]}		
-        if [[ -x "$(command -v $ex)" ]]; then
+    	ex=${EXEC_ARRAY[$i]}
+        hash $ex &> /dev/null
+        if [ $? -eq 0 ]; then
             VALID_EXEC_ARRAY+=($ex)
             ((NUM_VALID_EXEC++))
     	else
@@ -169,14 +192,16 @@ parse_args() {
     	fi
     done
     
+    # TODO Move this test to scripts where it matters
     # Check to make sure we have at least two valid! executables
-    if (( NUM_VALID_EXEC <= 1 ));
-    then
-        print_error
-        print_usage
-        exit $EXIT_FAILURE
-    fi
-
+    #if (( NUM_VALID_EXEC <= 1 ));
+    #then
+    #    print_error
+    #    print_usage
+    #    exit $EXIT_FAILURE
+    #fi
+    
+    # TODO Move this test to where it matters
     if ! [[ "$SIZE_THRESH" =~ ^[0-9]+$ ]]
     then
         print_error
@@ -205,8 +230,7 @@ get_size() {
     elif [[ "$OSTYPE" == "freebsd"* ]]; then
         siz_ref=$(stat -f %z -- $(which "$2"))  
     else
-            print_error
-            printf "MESSAGE: Unable to detect OS type...\n"
+            printf "\nERROR:\tUnable to detect OS type...\n"
             exit $EXIT_FAILURE
     fi
 }
@@ -218,7 +242,7 @@ function run_ampl_single {
 	# -b4 => interactive mode!
 	$2 -b4 > /dev/null 2>&1 <<!!!
 	include $1;
-	write g${output_dir}$1-$2;
+	write g${OUTPUT_DIR}$1-$2;
 	q;
 !!!
 }
@@ -229,8 +253,8 @@ function run_ampl_single {
 # Usage: compare_nl file1 file2
 function compare_nl {
 	if [ ! -f "$1" ] || [ ! -f "$2" ]; then
-		if [[ "$verbose_mode" = "true" ]]; then
-			echo "NO TEST:  ${1#"$output_dir"} and ${2#"$output_dir"} $3  ..."
+		if [[ "$VERBOSE_MODE" = "true" ]]; then
+			echo "NO TEST:  ${1#"$OUTPUT_DIR"} and ${2#"$OUTPUT_DIR"} $3  ..."
 		fi
 		return $EXIT_ERROR
 	fi
@@ -238,12 +262,12 @@ function compare_nl {
 	# '^g.*# problem .*$'
 	if diff --ignore-matching-lines='^g.*# problem .*$' <(tail -n +1 $1) <(tail -n +1 $2) >/dev/null 2>&1;
 	then
-		if [[ "$verbose_mode" = "true" ]]; then
-			echo "PASSED TEST:  ${1#"${output_dir}"} and ${2#"${output_dir}"} $3  ..."
+		if [[ "$VERBOSE_MODE" = "true" ]]; then
+			echo "PASSED TEST:  ${1#"${OUTPUT_DIR}"} and ${2#"${OUTPUT_DIR}"} $3  ..."
 		fi
 		return $EXIT_SUCCESS
 	fi
-	echo "FAILED TEST:  ${1#"${output_dir}"} and ${2#"${output_dir}"} $3  ..."
+	echo "FAILED TEST:  ${1#"${OUTPUT_DIR}"} and ${2#"${OUTPUT_DIR}"} $3  ..."
 	return $EXIT_FAILURE
 }
 
@@ -253,8 +277,8 @@ function compare_nl {
 # Each script is run, then the nl file is written.
 # Usage: comparation_single script ampl1 ampl2
 function comparation_single {
-	f1="${output_dir}$1-$2.nl"
-	f2="${output_dir}$1-$3.nl"
+	f1="${OUTPUT_DIR}$1-$2.nl"
+	f2="${OUTPUT_DIR}$1-$3.nl"
 	
 	compare_nl $f1 $f2
 	e=$?
@@ -277,18 +301,18 @@ function comparation_single {
 # Usage: run_ampl_pair modelname model data ampl
 function run_ampl_pair {
 	# -b4 => interactive mode!
-	$4 -b4 > /dev/null 2>&1 <<!!!
-	printf "# Artificial NL test for $1\n";
+	$3 -b4 > /dev/null 2>&1 <<!!!
+	printf "# Artificial NL test for $1 and $2\n";
 	option solver gurobi;
 	reset;
-	model $2;
-	data $3;
-	#printf "# Write .nl for $2 and $3 (before solving)\n";
-	write g${output_dir}prev-$1-$4;
-	#printf "# Solve $1 for $2 and $3\n";
+	model $1;
+	data $2;
+	#printf "# Write .nl for $1 and $2 (before solving)\n";
+	write g${OUTPUT_DIR}prev-$1-$2-$3;
+	#printf "# Solve with $2 and $3\n";
 	solve;
-	#printf "# Write .nl for $1 and $2 (after solving)\n";
-	write g${output_dir}post-$1-$4;
+	#printf "# Write .nl for $1 and $2 with $3 (after solving)\n";
+	write g${OUTPUT_DIR}post-$1-$2-$3;
 	q;
 !!!
 }
@@ -300,8 +324,8 @@ function run_ampl_pair {
 # to check (before and after solving).
 # Usage: comparation_pair modelname ampl1 ampl2
 function comparation_pair {
-	f1="${output_dir}prev-$1-$2.nl"
-	f2="${output_dir}prev-$1-$3.nl"
+	f1="${OUTPUT_DIR}prev-$1-$2-$3.nl"
+	f2="${OUTPUT_DIR}prev-$1-$2-$4.nl"
 	
 	compare_nl $f1 $f2 "(before solving)"
 	e=$?
@@ -315,8 +339,8 @@ function comparation_pair {
 		((no_tests++))
 	fi
 
-	f1="${output_dir}post-$1-$2.nl"
-	f2="${output_dir}post-$1-$3.nl"
+	f1="${OUTPUT_DIR}post-$1-$2-$3.nl"
+	f2="${OUTPUT_DIR}post-$1-$2-$4.nl"
 
 	compare_nl $f1 $f2 "(after solving)"
 	e=$?
@@ -335,17 +359,17 @@ function comparation_pair {
 # Function: get_md5
 # determines which md5 command to call depending
 # on the operating system
-# Input: 
+# Input:
 #   1. variable $1 to hold values
 # Sets variables:
 #   1. $1
 get_md5() {
     local -n md5_ref=$1
-	# Check executable sizes
+       # Check executable sizes
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         md5_ref="md5sum"
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        md5_ref="md5"  
+        md5_ref="md5"
     elif [[ "$OSTYPE" == "msys" ]]; then
         md5_ref="md5sum"
     elif [[ "$OSTYPE" == "freebsd"* ]]; then
@@ -356,3 +380,4 @@ get_md5() {
             exit $EXIT_FAILURE
     fi
 }
+
