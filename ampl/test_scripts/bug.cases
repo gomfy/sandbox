@@ -89,6 +89,11 @@ fi
 
 test_id=2
 test_tag=" "
+if [[ "$test_id" -eq 2 && "$ampl_cmd" == "ax" ]]; then
+    param_N=13
+else
+    param_N=8
+fi
 if [[ "$RUN_TEST" == "all" || "$RUN_TEST" -eq "$test_id" ]]; then
 $ampl_cmd $ampl_options <<!!! 2>&1 | $md5_cmd | awk -v id="id:$test_id" -v tag="tag:$test_tag" '{ print id"\t"tag"\thash:"$1 }' &>> $hash_file
 param sum_solve_time >= 0;
@@ -96,7 +101,7 @@ let sum_solve_time := 0;
 param N integer > 0;
 param p{i in 1..N} :=  p[10];
 data;
-param N := 8;
+param N := $param_N;
 display N;
 printf "id:$test_id\ttag:$test_tag\tampl_time:%f\tsum_solve_time:%f\n", _ampl_time, sum_solve_time>>$time_file;
 !!!

@@ -134,7 +134,7 @@ parse_args() {
     SIZE_THRESH=3 # TODO modify this to also allow for floating point
     # Speed thershold variable
     # need for run_output_tests.sh script
-    SPEED_THRES=1.1
+    SPEED_THRESH=1.1
     # For nl testing
     TARGET_DIR='.'
     OUTPUT_DIR="testout"

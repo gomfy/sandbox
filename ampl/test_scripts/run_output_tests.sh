@@ -84,111 +84,123 @@ do
 			
             # Test each output run against others
             # If outputs are the same, test passes, otherwise it fails
+            # This section of the code is also responsible for generating
+            # the input for the following time tests
             diffout=$(diff -y --suppress-common-lines $hf1 $hf2)
 			if [ "$diffout" == "" ]; then
                 if [ "$VERBOSE_MODE" = true ]; then
-				    printf "PASSED TEST:\t${test_array[$t]} with ${ex1} and ${ex2} ...\n"
+				    printf "PASSED OUTPUT TEST:\t${test_array[$t]} with ${ex1} and ${ex2} ...\n"
                 fi
                 ((num_passed_tests++))
 			else
                 if [ "$VERBOSE_MODE" = true ]; then
-				    printf "FAILED TEST:\t${test_array[$t]} with ${ex1} and ${ex2} ...\n"
-                    printf "$(printf "$diffout" | awk -F$'\t' '{ print "            \t"$1"\t"$2 }')\n"
+				    printf "FAILED OUTPUT TEST:\t${test_array[$t]} with ${ex1} and ${ex2} ...\n"
+                    printf "$(printf "$diffout" | awk -F$'\t' '{ print "                 \t"$1"\t"$2 }')\n"
                 fi
-                OUTPUT_ERROR_MESSAGE+=("FAILED TEST:\t${test_array[$t]} with ${ex1} and ${ex2} ...\n")
-                OUTPUT_ERROR_MESSAGE+=("$(printf "$diffout" | awk -F$'\t' '{ print "            \t"$1"\t"$2 }')\n")
+                OUTPUT_ERROR_MESSAGE+=("FAILED OUTPUT TEST:\t${test_array[$t]} with ${ex1} and ${ex2} ...\n")
+                OUTPUT_ERROR_MESSAGE+=("$(printf "$diffout" | awk -F$'\t' '{ print "                 \t"$1"\t"$2 }')\n")
                 ((num_failed_tests++))
                 OUTPUT_STAT=$EXIT_FAILURE
 			fi
-            
-            
-    		# If the output has passed then for non-debug binaries check speed
+             
+            # Test speed of the executables 
             # If speed is below threshold, test passes, otherwise it fails
-			if [ "$diffout" == "" ]; then
-                # Adjust IFS so that awk return can be processed into an array
-                defaultIFS=$IFS
-                IFS="\n"
-    			if [[ $hf1 =~ .*$DEBUG_EXEC.* || $hf2 =~ .*$DEBUG_EXEC.* ]]; then
-        			tf1="./$OUTPUT_DIR/${test_array[$t]}.${ex1}.time"
-        			tf2="./$OUTPUT_DIR/${test_array[$t]}.${ex2}.time"
-                    # Use awk to compute ampl_time and solve_time ratios, 
-                    # and store pass (0) and fail (134) in TIME_STAT array
-                    TIME_ERROR_MESSAGE=($(awk -v th=$SPEED_THRESH '
-                        function max(a, b) {
-                            return a > b ? a : b
-                        }
-                        
-                        function min(a, b) {
-                            return a < b ? a : b
-                        }
+            # Adjust IFS so that awk return can be processed into an array 
+            defaultIFS=$IFS
+            IFS=$'\n'
+            # Initialize output status
+            ampl_time_stat=0
+            solve_time_stat=0
+            # Exclude debug binaries from speed tests
+            if [[ $ex1 != *$DEBUG_EXEC* && $ex2 != *$DEBUG_EXEC* ]]; then
+        		tf1="./$OUTPUT_DIR/${test_array[$t]}.${ex1}.time"
+        		tf2="./$OUTPUT_DIR/${test_array[$t]}.${ex2}.time"
+                # Use awk to compute ampl_time and solve_time ratios, 
+                # and store pass (0), fail (134) and associated error message 
+                # in TIME_STAT_ERROR_MESSAGE array
+                time_stat_error_message=($(awk -v th=$SPEED_THRESH '
+                    function max(a, b) {
+                        return a > b ? a : b
+                    }
+                    
+                    function min(a, b) {
+                        return a < b ? a : b
+                    }
     
-                        NR==FNR {   
-                                    tag[$1]=$2
-                                    split($3,a,":") 
-                                    split($4,s,":")
-                                    at1[$1]=a[2]
-                                    st1[$1]=s[2]; next 
-                                } 
-                                {   
-                                    split($3,a,":")
-                                    split($4,s,":")
-                                    at2[$1]=a[2]   
-                                    st2[$1]=s[2] 
-                                } 
-                        END     {   
-                                    stat_a=0
-                                    stat_s=0
-                                    for ( i in at1 ) {
-                                        a_l = min(at1[i],at2[i])
-                                        a_h = max(at1[i],at2[i])
-                                        if ( a_l > 0 ) { 
-                                            ra = a_h/a_l         
-                                            if ( ra > th ) {
-                                                stat_a=134
-                                                error[i]=i" "tag[i]" ampl_time_fail_ratio:"ra
-                                            }
-                                        } else {
-                                            printf("ERROR minimum ampl running time is %f", a_l)
-                                            exit
+                    NR==FNR {   
+                                tag[$1]=$2
+                                split($3,a,":") 
+                                split($4,s,":")
+                                at1[$1]=a[2]
+                                st1[$1]=s[2]; next 
+                            } 
+                            {   
+                                split($3,a,":")
+                                split($4,s,":")
+                                at2[$1]=a[2]   
+                                st2[$1]=s[2] 
+                            } 
+                    END     {   
+                                stat_a=0
+                                stat_s=0
+                                for ( i in at1 ) {
+                                    a_l = min(at1[i],at2[i])
+                                    a_h = max(at1[i],at2[i])
+                                    if ( a_l > 0 ) { 
+                                        ra = a_h/a_l         
+                                        if ( ra > th ) {
+                                            stat_a=134
+                                            error[i]=i" "tag[i]" ampl_time_fail_ratio:"ra
                                         }
-                                        s_l = min(st1[i],st2[i]) 
-                                        s_h = max(st1[i],st2[i])
-                                        if ( s_l > 0 ) {
-                                            rs = s_h/s_l
-                                            if ( rs > th ) {
-                                                stat_s=134
-                                                error[i]=i" "tag[i]" solve_time_fail_ratio:"rs
-                                            }
-                                        } else {
-                                            rs = 0
+                                    } else {
+                                        printf("ERROR minimum ampl running time is %f", a_l)
+                                        exit
+                                    }
+                                    s_l = min(st1[i],st2[i]) 
+                                    s_h = max(st1[i],st2[i])
+                                    if ( s_l > 0 ) {
+                                        rs = s_h/s_l
+                                        if ( rs > th ) {
+                                            stat_s=134
+                                            error[i]=i" "tag[i]" solve_time_fail_ratio:"rs
                                         }
+                                    } else {
+                                        rs = 0
                                     }
-                                    printf("%d\n", stat_a)
-                                    printf("%d\n", stat_s)
-                                    for ( j in error ) {
-                                        printf("%s\n", error[j])
-                                    }
-                                }' "$tf1" "$tf2"))
-                fi
-                                  
-                printf "%s\n" "${TIME_ERROR_MESSAGE[@]}"
-                               
+                                }
+                                printf("%d\n", stat_a)
+                                printf("%d\n", stat_s)
+                                for ( j in error ) {
+                                    printf("%s\n", error[j])
+                                }
+                            }' "$tf1" "$tf2"))
+                        
+                # Process awk output            
+                ampl_time_stat=${time_stat_error_message[0]}               
+                solve_time_stat=${time_stat_error_message[1]}
+                time_error_message=( ${time_stat_error_message[@]:2} )
                 IFS=$defaultIFS
-                exit 0
-
-#                if [ "$VERBOSE_MODE" = true ]; then
-#				    printf "PASSED TEST:\t${test_array[$t]} with ${ex1} and ${ex2} ...\n"
-#                fi
-#                ((num_passed_tests++))
-#			else
-#                if [ "$VERBOSE_MODE" = true ]; then
-#				    printf "FAILED TEST:\t${test_array[$t]} with ${ex1} and ${ex2} ...\n"
-#                    printf "$(printf "$diffout" | awk -F$'\t' '{ print "            \t"$1"\t"$2 }')\n"
-#                fi
-#                OUTPUT_ERROR_MESSAGE+=("FAILED TEST:\t${test_array[$t]} with ${ex1} and ${ex2} ...\n")
-#                OUTPUT_ERROR_MESSAGE+=("$(printf "$diffout" | awk -F$'\t' '{ print "            \t"$1"\t"$2 }')\n")
-#                ((num_failed_tests++))
-#                OUTPUT_STAT=$EXIT_FAILURE
+            fi
+            
+            
+            if (( ampl_time_stat == 0 && solve_time_stat == 0 )); then
+                if [ "$VERBOSE_MODE" = true ]; then
+    			    printf "PASSED SPEED TEST:\t${test_array[$t]} with ${ex1} and ${ex2} ...\n"
+                fi
+                ((num_passed_tests++))
+            
+    		else
+                if [ "$VERBOSE_MODE" = true ]; then
+    		        printf "FAILED SPEED TEST:\t${test_array[$t]} with ${ex1} and ${ex2} ...\n"
+                    printf "                  \t%s\n" "${time_error_message[@]}"
+                fi
+                TIME_ERROR_MESSAGE+=("FAILED SPEED TEST:\t${test_array[$t]} with ${ex1} and ${ex2} ...\n")
+                for k in "${time_error_message[@]}"
+                do
+                    TIME_ERROR_MESSAGE+=("                  \t$k\n")
+                done
+                ((num_failed_tests++))
+                TIME_STAT=$EXIT_FAILURE
             fi
 		done
 	done
@@ -198,16 +210,20 @@ done
 num_tests=$((num_passed_tests+num_failed_tests))
 if [ "$VERBOSE_MODE" = true ]; then
     printf "# TEST SUMMARY\n"
-    if (( OUTPUT_STAT == EXIT_FAILURE )); then
+    if (( OUTPUT_STAT == EXIT_FAILURE || TIME_STAT == EXIT_FAILURE )); then
         printf "$num_failed_tests TESTS OUT OF $num_tests FAILED\n"
     else
         printf "ALL $num_tests TESTS PASSED\n"
     fi
     printf "### END TESTING OUTPUTS ###\n"
 else
-    if (( OUTPUT_STAT == EXIT_FAILURE )); then 
+    if (( OUTPUT_STAT == EXIT_FAILURE || TIME_STAT == EXIT_FAILURE )); then 
         printf "$num_failed_tests tests out of $num_tests failed:\n"
         for i in "${OUTPUT_ERROR_MESSAGE[@]}"
+        do
+            printf "$i"
+        done
+        for i in "${TIME_ERROR_MESSAGE[@]}"
         do
             printf "$i"
         done
