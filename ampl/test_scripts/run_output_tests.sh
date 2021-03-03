@@ -100,62 +100,80 @@ do
                 ((num_failed_tests++))
                 OUTPUT_STAT=$EXIT_FAILURE
 			fi
-
-			# For non-debug binaries check speed
+            
+            
+    		# If the output has passed then for non-debug binaries check speed
             # If speed is below threshold, test passes, otherwise it fails
-			if [[ $hf1 =~ .*$DEBUG_EXEC.* || $hf2 =~ .*$DEBUG_EXEC.* ]]; then
-    			tf1="./$OUTPUT_DIR/${test_array[$t]}.${ex1}.time"
-    			tf2="./$OUTPUT_DIR/${test_array[$t]}.${ex2}.time"
-                # Use awk to compute ampl_time and solve_time ratios, 
-                # and store pass (0) and fail (134) in TIME_STAT array
-                TIME_STAT=($(awk -v th=$SPEED_THRESH '
-                    function max(a, b) {
-                        return a > b ? a : b
-                    }
-                    
-                    function min(a, b) {
-                        return a < b ? a : b
-                    }
-
-                    NR==FNR {   
-                                split($3,a,":"); 
-                                split($4,s,":"); 
-                                at1+=a[2]; 
-                                st1+=s[2]; next 
-                            } 
-                            {   
-                                split($3,a,":");
-                                split($4,s,":");
-                                at2+=a[2];     
-                                st2+=s[2] 
-                            } 
-                    END     {   
-                                stat_a=0
-                                stat_s=0
-                                a_l = min(at1,at2)
-                                a_h = max(at1,at2)
-                                if ( a_l > 0 ) { 
-                                    ra = a_h/a_l         
-                                    if ( ra > th ) {
-                                        stat_a=134
+			if [ "$diffout" == "" ]; then
+                # Adjust IFS so that awk return can be processed into an array
+                defaultIFS=$IFS
+                IFS="\n"
+    			if [[ $hf1 =~ .*$DEBUG_EXEC.* || $hf2 =~ .*$DEBUG_EXEC.* ]]; then
+        			tf1="./$OUTPUT_DIR/${test_array[$t]}.${ex1}.time"
+        			tf2="./$OUTPUT_DIR/${test_array[$t]}.${ex2}.time"
+                    # Use awk to compute ampl_time and solve_time ratios, 
+                    # and store pass (0) and fail (134) in TIME_STAT array
+                    TIME_ERROR_MESSAGE=($(awk -v th=$SPEED_THRESH '
+                        function max(a, b) {
+                            return a > b ? a : b
+                        }
+                        
+                        function min(a, b) {
+                            return a < b ? a : b
+                        }
+    
+                        NR==FNR {   
+                                    tag[$1]=$2
+                                    split($3,a,":") 
+                                    split($4,s,":")
+                                    at1[$1]=a[2]
+                                    st1[$1]=s[2]; next 
+                                } 
+                                {   
+                                    split($3,a,":")
+                                    split($4,s,":")
+                                    at2[$1]=a[2]   
+                                    st2[$1]=s[2] 
+                                } 
+                        END     {   
+                                    stat_a=0
+                                    stat_s=0
+                                    for ( i in at1 ) {
+                                        a_l = min(at1[i],at2[i])
+                                        a_h = max(at1[i],at2[i])
+                                        if ( a_l > 0 ) { 
+                                            ra = a_h/a_l         
+                                            if ( ra > th ) {
+                                                stat_a=134
+                                                error[i]=i" "tag[i]" ampl_time_fail_ratio:"ra
+                                            }
+                                        } else {
+                                            printf("ERROR minimum ampl running time is %f", a_l)
+                                            exit
+                                        }
+                                        s_l = min(st1[i],st2[i]) 
+                                        s_h = max(st1[i],st2[i])
+                                        if ( s_l > 0 ) {
+                                            rs = s_h/s_l
+                                            if ( rs > th ) {
+                                                stat_s=134
+                                                error[i]=i" "tag[i]" solve_time_fail_ratio:"rs
+                                            }
+                                        } else {
+                                            rs = 0
+                                        }
                                     }
-                                } else {
-                                    printf("ERROR minimum ampl running time is %f", a_l)
-                                    exit
-                                }
-                                s_l = min(st1,st2) 
-                                s_h = max(st1,st2)
-                                if ( s_l > 0 ) {
-                                    rs = s_h/s_l
-                                    if ( rs > th ) {
-                                        stat_s=134
+                                    printf("%d\n", stat_a)
+                                    printf("%d\n", stat_s)
+                                    for ( j in error ) {
+                                        printf("%s\n", error[j])
                                     }
-                                } else {
-                                    rs = 0
-                                }
-                                printf("%d %d", stat_a,stat_s)
-                            }' "$tf1" "$tf2"))
-                echo "${TIME_STAT[@]}"
+                                }' "$tf1" "$tf2"))
+                fi
+                                  
+                printf "%s\n" "${TIME_ERROR_MESSAGE[@]}"
+                               
+                IFS=$defaultIFS
                 exit 0
 
 #                if [ "$VERBOSE_MODE" = true ]; then
