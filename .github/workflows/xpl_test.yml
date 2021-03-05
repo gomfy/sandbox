@@ -34,5 +34,5 @@ jobs:
       - name: Run tests
         run: |
             cd bash
-            bash array_slice.sh
+            bash array_slice.sh text.file
         shell: bash {0}
