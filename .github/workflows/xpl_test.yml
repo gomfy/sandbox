@@ -33,8 +33,11 @@ jobs:
 
       - name: Run tests
         run: |
+            printf "\nAWK VERSION INFO:\n"
             awk -W version
+            printf "\nBASH VERSION INFO:\n"
             bash --version
+            printf "\nARRAY SLICING:\n"
             cd bash
             bash array_slice.sh text.file
         shell: bash {0}
