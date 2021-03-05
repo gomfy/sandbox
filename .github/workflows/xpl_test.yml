@@ -33,6 +33,8 @@ jobs:
 
       - name: Run tests
         run: |
+            awk -W version
+            bash --version
             cd bash
             bash array_slice.sh text.file
         shell: bash {0}
