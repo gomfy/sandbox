@@ -25,6 +25,14 @@ OUTPUT_ERROR_MESSAGE=()
 # Parse arguments and set variables
 parse_args "$@" 
 
+# Check to make sure we have at least two executables
+if (( NUM_VALID_EXEC <= 1 ));
+then
+    print_error
+    print_usage
+    exit $EXIT_FAILURE
+fi
+
 # Define array of test cases 
 # test cases are names of scripts that take the name of an ampl executable 
 # as an input
@@ -76,10 +84,10 @@ do
 			hf2="./$OUTPUT_DIR/${test_array[$t]}.${ex2}.hash"
 			# Lazy evaluation (it matters with > 2 executables)
 			if [ ! -f $hf1 ]; then
-				./${test_array[$t]} $ex1 2>&1 
+				./${test_array[$t]} $ex1 -t $RUN_TEST 2>&1 
 			fi
 			if [ ! -f $hf2 ]; then
-				./${test_array[$t]} $ex2 2>&1
+				./${test_array[$t]} $ex2 -t $RUN_TEST 2>&1
 			fi
 			
             # Test each output run against others

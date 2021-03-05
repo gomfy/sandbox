@@ -52,6 +52,8 @@ printf "\t -q #:         Size threshold flag where # is an integer.\n"
 printf "\t               If (max size / min size) > # size test fails.\n"
 printf "\t -r:           .\n"
 printf "\t -t:           .\n"
+printf "\t -s #:         Speed threshold flag where # is a number.\n"
+printf "\t               If (max speed / min speed) > # speed test fails.\n"
 printf "\t -v:           Verbose flag.\n"
 printf "\t -x:           Nix-exit flag.\n"
 printf "\t EXEC1,EXEC2:  AMPL executables to be tested.\n"
@@ -113,7 +115,7 @@ arrange_args() {
 #   1. EXEC_ARRAY
 #   2. NUM_EXEC
 parse_args() {
-    local optstr=d:e:g:o:q:rt:vx
+    local optstr=d:e:g:o:q:rs:t:vx
    
     # Define: 
     # return codes, verbose mode, nix-exit mode,
@@ -157,6 +159,7 @@ parse_args() {
             o        ) OUTPUT_DIR=${OPTARG} ;;
             q        ) SIZE_THRESH=$OPTARG ;;
             r        ) REMOVE_FLAG=true ;;
+            s        ) SPEED_THRESH=$OPTARG ;;
             t        ) RUN_TEST=${OPTARG} ;;
             v        ) VERBOSE_MODE=true ;; 
             x        ) NIXEXIT_MODE=true ;; 

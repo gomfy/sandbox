@@ -14,27 +14,25 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: windows-latest, md5: "md5sum"}
-          - {os: macOS-latest, md5: "md5"}
-          - {os: ubuntu-16.04, md5: "md5sum"}
+          - {os: windows-latest}
+          - {os: macOS-latest}
+          - {os: ubuntu-16.04}
+          - {os: ubuntu-20.04}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
-      MD5: ${{ matrix.config.md5 }}
 
     steps:
       - name: Setup actions checkout
         uses: actions/checkout@v2
     
-      - name: Install bash on MacOS
-        if: runner.os == 'macOS'
-        run: |
-            brew install bash
+        #      - name: Install bash on MacOS
+        #        if: runner.os == 'macOS'
+        #        run: |
+        #            brew install bash
 
       - name: Run tests
         run: |
-            cd ampl/test_scripts/
-            ./run_output_tests.sh echo cat cat echo -v
-            cd testout/
-            ls | awk '{ print $1; system("cat " $1) }'
+            cd bash
+            bash array_slice.sh
         shell: bash {0}

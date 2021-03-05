@@ -7,10 +7,6 @@
 # Description: 	Test script that runs a set of numbered tests based on Dave's original tests. 
 #               
 
-#input_args=("$@")
-#echo "${input_args[@]}"
-#printf 'Original arguments: "${input_args[@]}" \n'
-
 # Load user defined variables and functions
 source ./functions.sh
 
@@ -64,6 +60,11 @@ time_file="./$OUTPUT_DIR/$(basename $0).$ampl_cmd.time"
 if [ "$VERBOSE_MODE" = true ]; then
     printf "time_file:$time_file\n"
 fi
+raw_file="./$OUTPUT_DIR/$(basename $0).$ampl_cmd.raw"
+> "$raw_file"
+if [ "$VERBOSE_MODE" = true ]; then
+    printf "raw_file:$raw_file\n"
+fi
 
 # Run tests depending on RUN_TEST value 
 
@@ -75,49 +76,55 @@ else
     param_N=7
 fi
 if [[ "$RUN_TEST" == "all" || "$RUN_TEST" -eq "$test_id" ]]; then
-$ampl_cmd $ampl_options <<!!! 2>&1 | $md5_cmd | awk -v id="id:$test_id" -v tag="tag:$test_tag" '{ print id"\t"tag"\thash:"$1 }' &>> $hash_file
-param sum_solve_time >= 0;
-let sum_solve_time := 0;
+$ampl_cmd $ampl_options <<!!! 2>&1 | tee -a $raw_file | $md5_cmd | awk -v id="id:$test_id" -v tag="tag:$test_tag" '{ print id"\t"tag"\thash:"$1 }' &>> $hash_file
 param N integer > 0;
 param p{i in 1..N} :=  p[10];
 data;
 param N := $param_N;
 display N;
-printf "id:$test_id\ttag:$test_tag\tampl_time:%f\tsum_solve_time:%f\n", _ampl_time, sum_solve_time>>$time_file;
+display p;
+printf "id:$test_id\ttag:$test_tag\tampl_time:%f\tsum_solve_time:%f\n", _ampl_time, _solve_time>>$time_file;
 !!!
+if [[ "$RUN_TEST" -eq "$test_id" ]]; then
+    cat $raw_file
+fi
 fi
 
 test_id=2
 test_tag=" "
 if [[ "$test_id" -eq 2 && "$ampl_cmd" == "ax" ]]; then
-    param_N=13
+    param_N=8
 else
     param_N=8
 fi
 if [[ "$RUN_TEST" == "all" || "$RUN_TEST" -eq "$test_id" ]]; then
-$ampl_cmd $ampl_options <<!!! 2>&1 | $md5_cmd | awk -v id="id:$test_id" -v tag="tag:$test_tag" '{ print id"\t"tag"\thash:"$1 }' &>> $hash_file
-param sum_solve_time >= 0;
-let sum_solve_time := 0;
+$ampl_cmd $ampl_options <<!!! 2>&1 | tee -a $raw_file | $md5_cmd | awk -v id="id:$test_id" -v tag="tag:$test_tag" '{ print id"\t"tag"\thash:"$1 }' &>> $hash_file
 param N integer > 0;
 param p{i in 1..N} :=  p[10];
 data;
 param N := $param_N;
 display N;
-printf "id:$test_id\ttag:$test_tag\tampl_time:%f\tsum_solve_time:%f\n", _ampl_time, sum_solve_time>>$time_file;
+display p;
+printf "id:$test_id\ttag:$test_tag\tampl_time:%f\tsum_solve_time:%f\n", _ampl_time, _solve_time>>$time_file;
 !!!
+if [[ "$RUN_TEST" -eq "$test_id" ]]; then
+    cat $raw_file
+fi
 fi
 
 test_id=3
 test_tag="subscript-error"
 if [[ "$RUN_TEST" == "all" || "$RUN_TEST" -eq "$test_id" ]]; then
-$ampl_cmd $ampl_options <<!!! 2>&1 | $md5_cmd | awk -v id="id:$test_id" -v tag="tag:$test_tag" '{ print id"\t"tag"\thash:"$1 }' &>> $hash_file
-param sum_solve_time >= 0;
-let sum_solve_time := 0;
+$ampl_cmd $ampl_options <<!!! 2>&1 | tee -a $raw_file | $md5_cmd | awk -v id="id:$test_id" -v tag="tag:$test_tag" '{ print id"\t"tag"\thash:"$1 }' &>> $hash_file
 param N integer > 0;
 param p{i in 1..N} :=  p[10];
 data;
 param N := 8;
 display N;
-printf "id:$test_id\ttag:$test_tag\tampl_time:%f\tsum_solve_time:%f\n", _ampl_time, sum_solve_time>>$time_file;
+display p;
+printf "id:$test_id\ttag:$test_tag\tampl_time:%f\tsum_solve_time:%f\n", _ampl_time, _solve_time>>$time_file;
 !!!
+if [[ "$RUN_TEST" -eq "$test_id" ]]; then
+    cat $raw_file
+fi
 fi
