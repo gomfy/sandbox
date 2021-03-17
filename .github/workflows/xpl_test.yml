@@ -33,9 +33,8 @@ jobs:
 
       - name: Run tests
         run: |
-            cd file
+            cd bash/file
             bash build.sh
             cd build
             ls -ltr
-            tree .
         shell: bash {0}
