@@ -34,7 +34,6 @@ jobs:
       - name: Run tests
         run: |
             cd bash/file
-            bash build.sh
-            cd build
-            ls -ltr
+            ./build.sh
+            file build/bin/main
         shell: bash {0}
