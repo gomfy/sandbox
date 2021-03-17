@@ -1,5 +1,6 @@
 # Build directory
 ampl/build_anomaly/build/
+bash/file/build/
 
 # Prerequisites
 *.d
