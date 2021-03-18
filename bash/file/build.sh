@@ -8,5 +8,11 @@ else
 fi
 
 cd build
-cmake ..
-cmake --build .
+
+if [[ "$OSTYPE" == "msys" ]]; then
+    cmake -A Win32 ..
+    cmake --build .
+else
+    cmake ..
+    cmake --build .
+fi
