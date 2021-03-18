@@ -35,7 +35,9 @@ jobs:
         if: runner.os == 'Linux'
         run: | 
             sudo dpkg --add-architecture i386
-            sudo apt-get update
+            sudo apt update
+            sudo apt install libc6:i386 libncurses5:i386 libstdc++6:i386
+            sudo apt install multiarch-support
 
       - name: Run tests
         run: |
