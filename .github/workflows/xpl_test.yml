@@ -31,6 +31,12 @@ jobs:
         run: |
             brew install bash
 
+      - name: Enable 32-bit on Ubuntu
+        if: runner.os == 'Linux'
+        run: | 
+            sudo dpkg --add-architecture i386
+            sudo apt-get update
+
       - name: Run tests
         run: |
             cd bash/file
