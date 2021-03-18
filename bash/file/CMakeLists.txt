@@ -19,6 +19,6 @@ set(BINNAME main)
 add_executable(${BINNAME}
     ${SOURCES}) 
 
-if(NOT MSVC)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     set_target_properties(${BINNAME} PROPERTIES COMPILE_OPTIONS "-m32" LINK_FLAGS "-m32")
 endif()
