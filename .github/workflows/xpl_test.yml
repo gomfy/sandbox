@@ -17,7 +17,6 @@ jobs:
           - {os: windows-latest}
           - {os: macOS-latest}
           - {os: ubuntu-16.04}
-          - {os: ubuntu-20.04}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
@@ -36,7 +35,7 @@ jobs:
         run: | 
             sudo dpkg --add-architecture i386
             sudo apt-get update
-            sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i38 multiarch-support
+            sudo apt-get install -y libc6:i386 libncurses5:i386 libstdc++6:i386 multiarch-support
 
       - name: Run tests
         run: |
