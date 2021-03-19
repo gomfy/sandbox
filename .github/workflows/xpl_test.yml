@@ -17,6 +17,7 @@ jobs:
           - {os: windows-latest}
           - {os: macOS-latest}
           - {os: ubuntu-16.04}
+          - {os: ubuntu-20.04}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
@@ -42,5 +43,7 @@ jobs:
             cd bash/file
             ./build.sh
             ls -ltr build/bin
+            stat build/bin/main
+            printf "\nNow the file command:\n"
             file build/bin/main
         shell: bash {0}
