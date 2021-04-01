@@ -1,0 +1,3613 @@
+
+
+id:1
+Error executing "display" command:
+error during recursive evaluation of p[1]:
+	invalid subscript p[10]
+
+
+id:2
+p [*] :=
+3   7
+5  22
+;
+
+sp [*] :=
+3  xyz
+;
+
+sp[i] [*] :=
+1  abc
+2  2
+3  xyz
+4  4
+;
+
+
+
+id:3
+p [*] :=
+1     1
+2     2
+3     6
+4    24
+5   120
+6   720
+7  5040
+;
+
+sp [*] :=
+1  abc
+2  2
+3  x
+4  y
+;
+
+
+
+id:4
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 7.11946967e-25
+Nonlin evals: obj = 8, grad = 7.
+x [*] :=
+1  2
+2  3
+;
+
+
+
+id:5
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 30.92537313
+total_cost [*] :=
+'A&P'  78.2057
+JEWEL  77.0675
+ VONS  81.1133
+;
+
+total_number = 30.9254
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 74.3532967
+total_cost [*] :=
+'A&P'  75.8454
+JEWEL  74.3533
+ VONS  81.172
+;
+
+total_number = 32.6044
+
+
+
+id:6
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 74.27382022
+Objective = total_cost['A&P']
+diet_min [*] :=
+  A  0
+ B1  0
+ B2  0
+  C  0.00670787
+CAL  0.00447191
+;
+
+Error executing "drop" command:
+	invalid subscript diet_min['Q']
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 74.27382022
+Objective = total_cost['A&P']
+diet_min [*] :=
+  A  0
+ B1  0
+ B2  0
+  C  0.00670787
+CAL  0.00447191
+;
+
+
+
+id:7
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 38.64
+Objective = total_cost['A&P']
+
+
+id:8
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 514521.7143
+Sell[p,a,t] [bands,*,*] (tr)
+:    east    north    :=
+1   2000      4000
+2   2000      4000
+3   1500      2500
+4   1928.57   4500
+
+ [coils,*,*] (tr)
+:   east export   west    :=
+1   1000    0        0
+2    800    0     1007
+3   1000    0      680
+4   1100    0        0
+;
+
+Sell[p,a,t] [*,bands,*]
+:    east    north    :=
+1   2000      4000
+2   2000      4000
+3   1500      2500
+4   1928.57   4500
+
+ [*,coils,*]
+:   east export   west    :=
+1   1000    0        0
+2    800    0     1007
+3   1000    0      680
+4   1100    0        0
+;
+
+
+
+id:9
+set {i in ORIG, j in DEST: (i,j,'bands') in ROUTES1}  :=
+(GARY,DET)   (CLEV,FRA)   (CLEV,LAN)   (PITT,FRA)   (PITT,STL)
+(GARY,LAN)   (CLEV,DET)   (CLEV,STL)   (PITT,WIN)   (PITT,FRE);
+
+set {i in ORIG, j in DEST: (i,j,'coils') in ROUTES1}  :=
+(GARY,LAN)   (GARY,LAF)   (CLEV,LAN)   (CLEV,STL)
+(GARY,STL)   (CLEV,FRA)   (CLEV,WIN)   (CLEV,LAF);
+
+set {(i,j,'bands') in ROUTES1}  :=
+(GARY,DET)   (CLEV,FRA)   (CLEV,LAN)   (PITT,FRA)   (PITT,STL)
+(GARY,LAN)   (CLEV,DET)   (CLEV,STL)   (PITT,WIN)   (PITT,FRE);
+
+set {(i,j,'coils') in ROUTES1}  :=
+(GARY,LAN)   (GARY,LAF)   (CLEV,LAN)   (CLEV,STL)
+(GARY,STL)   (CLEV,FRA)   (CLEV,WIN)   (CLEV,LAF);
+
+set {j in DEST: ('GARY',j,'bands') in ROUTES1}  := DET LAN;
+
+set {j in DEST: ('GARY',j,'coils') in ROUTES1}  := LAN STL LAF;
+
+set {j in DEST: ('CLEV',j,'bands') in ROUTES1}  := FRA DET LAN STL;
+
+set {j in DEST: ('CLEV',j,'coils') in ROUTES1}  := FRA LAN WIN STL LAF;
+
+set {j in DEST: ('PITT',j,'bands') in ROUTES1}  := FRA WIN STL FRE;
+
+set {j in DEST: ('PITT',j,'coils') in ROUTES1}  := ; # empty
+
+
+
+id:10
+cost [*,*,bands]
+:    DET  FRA  FRE  LAF  LAN  STL  WIN    :=
+CLEV   9   27   .    17   12   26   .
+PITT   .   24   99   .    .    28   13
+
+ [*,*,coils]
+:    DET  FRA  FRE LAF  LAN  STL WIN    :=
+CLEV   8   23   .    .   10   21   9
+GARY   .   .    .    8   11   16   .
+PITT   .   .    81   .   .    .    .
+;
+
+cost[i,j,p] [*,*,bands]
+:    DET  FRA  FRE  LAF  LAN  STL  WIN    :=
+CLEV   9   27   .    17   12   26   .
+PITT   .   24   99   .    .    28   13
+
+ [*,*,coils]
+:    DET  FRA  FRE LAF  LAN  STL WIN    :=
+CLEV   8   23   .    .   10   21   9
+GARY   .   .    .    8   11   16   .
+PITT   .   .    81   .   .    .    .
+;
+
+cost [*,*,bands]
+:    DET  FRA  FRE  LAF  LAN  STL  WIN    :=
+CLEV   9   27   .    17   12   26   .
+PITT   .   24   99   .    .    28   13
+
+ [*,*,coils]
+:    DET  FRA  FRE LAF  LAN  STL WIN    :=
+CLEV   8   23   .    .   10   21   9
+GARY   .   .    .    8   11   16   .
+PITT   .   .    81   .   .    .    .
+;
+
+cost[i,j,p] [*,*,bands]
+:     FRA DET  LAN  WIN  STL  FRE  LAF    :=
+CLEV   27   9   12   .    26   .    17
+PITT   24   .   .    13   28   99   .
+
+ [*,*,coils]
+:     FRA DET  LAN WIN  STL  FRE LAF    :=
+GARY   .    .   11   .   16   .    8
+CLEV   23   8   10   9   21   .    .
+PITT   .    .   .    .   .    81   .
+;
+
+
+
+id:11
+CPLEX 12.6.3.0: optimal integer solution; objective 229850
+XXX MIP simplex iterations
+0 branch-and-bound nodes
+
+
+id:12
+set I := 1 2 3;
+
+3
+
+
+id:13
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 0.0025
+Nonlin evals: obj = 10, grad = 9.
+x [*] :=
+1  0.2
+2  0.5
+3  0.75
+4  1
+;
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 0.01777777778
+Nonlin evals: obj = 8, grad = 7.
+x [*] :=
+1  0.2
+2  0.666667
+3  1
+;
+
+
+
+id:14
+No variables declared.
+
+syntax error
+context:  let  >>> f_max[ <<< "CHK"] := 11;
+
+
+id:15
+set A := a b c;
+
+set A := 1 2 3;
+
+
+
+id:16
+set t1 diff t2 := 0.30000000000000004 0.6000000000000001 0.7000000000000001;
+
+set t1 :=
+0                     0.4                   0.8
+0.1                   0.5                   0.9
+0.2                   0.6000000000000001    1
+0.30000000000000004   0.7000000000000001;
+
+set t2 := 0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1;
+
+
+
+id:17
+Error executing "display" command:
+	no data for set S
+prevw(s, S) [*] :=
+a  c
+b  a
+c  b
+;
+
+
+
+id:18
+q [*] :=
+1  2.5
+2  3.5
+3  4.2
+;
+
+q [*] :=
+1  2.5
+2  7.3
+3  4.2
+;
+
+
+
+id:19
+set SS[1] := a b c;
+set SS[2] := d e f;
+
+
+set SS[3] := x y z;
+
+
+
+id:20
+Error executing "display" command:
+error processing var x[...]:
+	no data for set PROD
+x.lb [*] :=
+1  0
+2  0
+3  0
+;
+
+
+
+id:21
+Error executing "display" command:
+
+	No values for a.
+a [*] :=
+1  111
+2  222
+3  333
+;
+
+a[1] = 111
+
+
+
+id:22
+ack[10,0] = 11
+
+ack[1,1] = 3
+ack[1,2] = 5
+
+
+
+id:23
+set  union {j in 1 .. 5} j*2 .. 10 := 2 3 4 5 6 7 8 9 10;
+
+set  union {j in 1 .. 5} j*2 .. 10 := 2 3 4 5 6 7 8 9 10;
+
+
+
+id:24
+b [*] :=
+1  here
+2  there
+3  everywhere
+;
+
+b [*] :=
+1  here
+2  there
+3  'every where'
+;
+
+b [*] :=
+1  here
+2  there
+3  nowhere
+;
+
+
+
+id:25
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 74.27382022
+Objective = total_cost['A&P']
+total_cost [*] :=
+'A&P'  74.2738
+JEWEL  75.0197
+ VONS  79.5972
+;
+
+total_number = 31.4944
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 74.27382022
+total_cost [*] :=
+'A&P'  74.2738
+JEWEL  75.0197
+ VONS  79.5972
+;
+
+total_number = 31.4944
+
+
+
+id:26
+Error executing "display" command:
+	ungenerated variable x
+
+
+id:27
+Error executing "print" command:
+	ungenerated constraint bletch
+
+
+id:28
+Error executing "print" command:
+	ungenerated objective zot
+
+
+id:29
+Error executing "display" command:
+
+	No values for a.
+Error executing "display" command:
+error processing var X[...]:
+	no data for set S
+set S := z x c v;
+
+X [*] :=
+c  1
+v  1
+x  1
+z  1
+;
+
+
+
+id:30
+Error executing "display" command:
+error processing param a[...]:
+	no data for set S
+set S := z x c v;
+
+a [*] :=
+c  42
+v  42
+x  42
+z  42
+;
+
+a['z'] = 42
+
+
+
+id:31
+p [*] :=
+1  22
+;
+
+p [*] :=
+1  37
+2  42
+3  58
+;
+
+
+
+id:32
+MINOS 5.51: ignoring integrality of 130 variables
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 0
+
+
+id:33
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 6
+x :=
+1 1    0
+1 2   -2.33139e-16
+2 1    1
+2 2   -2.33139e-16
+3 1    0
+3 2    1
+4 1   -1.41443
+4 2    2.9912e-16
+5 1    0
+5 2   -1.41443
+;
+
+b :=
+1 1   0
+1 2   3.67183e-16
+2 1   1
+2 2   3.67183e-16
+3 1   0
+3 2   1
+4 1   1.41443
+4 2   0
+5 1   0
+5 2   1.41443
+;
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 6
+
+"option abs_boundtol 4.930380657631324e-32;"
+or "option rel_boundtol 1.342759323344034e-16;"
+will change deduced dual values.
+
+pi :=
+1 1   0
+1 2   0
+2 1   1
+2 2   0
+3 1   0
+3 2   1
+4 1   1.414
+4 2   0
+5 1   0
+5 2   1.414
+;
+
+si [*] :=
+1  3
+2  3
+;
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 6
+
+"option abs_boundtol 4.930380657631324e-32;"
+or "option rel_boundtol 1.342759323344034e-16;"
+will change deduced dual values.
+
+x :=
+1 1   -1
+1 2   -1
+2 1    0
+2 2   -1
+3 1   -1
+3 2    0
+4 1    0
+4 2    1.41443
+5 1    1.41443
+5 2    0
+;
+
+b :=
+1 1   1
+1 2   1
+2 1   2.44789e-16
+2 2   1
+3 1   1
+3 2   6.11971e-16
+4 1   0
+4 2   1.41443
+5 1   1.41443
+5 2   0
+;
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 3.5
+
+
+id:34
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 88.2
+
+
+id:35
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 5.230545981e-17
+Nonlin evals: obj = 21, grad = 20.
+x [*] :=
+1  2
+2  1.41421
+;
+
+z = 5
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 5.230545981e-17
+Nonlin evals: obj = 3, grad = 2.
+x [*] :=
+1  2
+2  1.41421
+;
+
+z = 5
+
+
+
+id:36
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 4
+x [*] :=
+a  1
+b  0
+c  1
+d  0
+;
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 3
+x [*] :=
+g  0
+h  0
+i  1
+j  0
+;
+
+
+
+id:37
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 1819
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 1819
+
+
+id:38
+sum{i in 1 .. 2: 0 == 1} i = 0
+
+sum{i in 1 .. 2: j == 2} i = 0
+
+sum{i in 1 .. 2: j == 2} i = 3
+
+sum{i in 1 .. 2: j == 2} i = 0
+
+
+
+id:39
+set A := 1 2 3 4 5 6 7 8;
+
+b [*] :=
+1  N
+2  Y
+3  N
+4  Y
+5  N
+6  Y
+7  N
+8  Y
+;
+
+c [*] :=
+1  0
+2  1
+3  0
+4  1
+5  0
+6  1
+7  0
+8  1
+;
+
+set D := 2 4 6 8;
+
+set E := 1 3 5 7;
+
+set F := 2 4 6 8;
+
+set G := 1 3 5 7;
+
+
+
+id:40
+This first loop works:
+A A
+A B
+A C
+A D
+B A
+B B
+B C
+B D
+C A
+C B
+C C
+C D
+D A
+D B
+D C
+D D
+this second loop including solve breaks:
+A A
+Solution determined by presolve;
+objective Cost['A','A'] = 10.
+result : 10.000000
+A B
+Solution determined by presolve;
+objective Cost['A','B'] = 10.
+result : 10.000000
+A C
+Solution determined by presolve;
+objective Cost['A','C'] = 10.
+result : 10.000000
+A D
+Solution determined by presolve;
+objective Cost['A','D'] = 10.
+result : 10.000000
+B A
+Solution determined by presolve;
+objective Cost['B','A'] = 10.
+result : 10.000000
+B B
+Solution determined by presolve;
+objective Cost['B','B'] = 10.
+result : 10.000000
+B C
+Solution determined by presolve;
+objective Cost['B','C'] = 10.
+result : 10.000000
+B D
+Solution determined by presolve;
+objective Cost['B','D'] = 10.
+result : 10.000000
+C A
+Solution determined by presolve;
+objective Cost['C','A'] = 10.
+result : 10.000000
+C B
+Solution determined by presolve;
+objective Cost['C','B'] = 10.
+result : 10.000000
+C C
+Solution determined by presolve;
+objective Cost['C','C'] = 10.
+result : 10.000000
+C D
+Solution determined by presolve;
+objective Cost['C','D'] = 10.
+result : 10.000000
+D A
+Solution determined by presolve;
+objective Cost['D','A'] = 10.
+result : 10.000000
+D B
+Solution determined by presolve;
+objective Cost['D','B'] = 10.
+result : 10.000000
+D C
+Solution determined by presolve;
+objective Cost['D','C'] = 10.
+result : 10.000000
+D D
+Solution determined by presolve;
+objective Cost['D','D'] = 10.
+result : 10.000000
+
+
+id:41
+This first loop works:
+A A A
+A A B
+A A C
+A A D
+A B A
+A B B
+A B C
+A B D
+A C A
+A C B
+A C C
+A C D
+A D A
+A D B
+A D C
+A D D
+B A A
+B A B
+B A C
+B A D
+B B A
+B B B
+B B C
+B B D
+B C A
+B C B
+B C C
+B C D
+B D A
+B D B
+B D C
+B D D
+C A A
+C A B
+C A C
+C A D
+C B A
+C B B
+C B C
+C B D
+C C A
+C C B
+C C C
+C C D
+C D A
+C D B
+C D C
+C D D
+D A A
+D A B
+D A C
+D A D
+D B A
+D B B
+D B C
+D B D
+D C A
+D C B
+D C C
+D C D
+D D A
+D D B
+D D C
+D D D
+this second loop including solve used to break:
+A A
+Solution determined by presolve;
+objective Cost['A','A'] = 10.
+result : 10.000000
+A B
+Solution determined by presolve;
+objective Cost['A','B'] = 10.
+result : 10.000000
+A C
+Solution determined by presolve;
+objective Cost['A','C'] = 10.
+result : 10.000000
+A D
+Solution determined by presolve;
+objective Cost['A','D'] = 10.
+result : 10.000000
+B A
+Solution determined by presolve;
+objective Cost['B','A'] = 10.
+result : 10.000000
+B B
+Solution determined by presolve;
+objective Cost['B','B'] = 10.
+result : 10.000000
+B C
+Solution determined by presolve;
+objective Cost['B','C'] = 10.
+result : 10.000000
+B D
+Solution determined by presolve;
+objective Cost['B','D'] = 10.
+result : 10.000000
+C A
+Solution determined by presolve;
+objective Cost['C','A'] = 10.
+result : 10.000000
+C B
+Solution determined by presolve;
+objective Cost['C','B'] = 10.
+result : 10.000000
+C C
+Solution determined by presolve;
+objective Cost['C','C'] = 10.
+result : 10.000000
+C D
+Solution determined by presolve;
+objective Cost['C','D'] = 10.
+result : 10.000000
+D A
+Solution determined by presolve;
+objective Cost['D','A'] = 10.
+result : 10.000000
+D B
+Solution determined by presolve;
+objective Cost['D','B'] = 10.
+result : 10.000000
+D C
+Solution determined by presolve;
+objective Cost['D','C'] = 10.
+result : 10.000000
+D D
+Solution determined by presolve;
+objective Cost['D','D'] = 10.
+result : 10.000000
+
+
+id:42
+MINOS 5.51: function mean not available
+exit value 4
+
+
+id:43
+set  lca_set[1,1] := 1;
+
+
+
+id:44
+
+Can't find  file "/tmp/stoch2.mod"
+context:  model  >>> /tmp/stoch2.mod <<< ;
+
+ITERATION 1
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 179523
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 125839
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 93830
+
+GAP = Infinity
+
+:              Make   Sell   Inv    :=
+bands 2 BASE   4400   4400     0
+bands 2 HIGH   8000   7900   100
+bands 2 LOW    4400   4400     0
+bands 3 HIGH   6400   6500     0
+bands 4 BASE   2000   2000     0
+bands 4 HIGH   6500   6500     0
+bands 4 LOW    2000   2000     0
+coils 2 BASE   2520   2500    20
+coils 2 LOW    2520   2500    20
+coils 3 BASE   4480   4500     0
+coils 3 LOW    4480   4500     0
+coils 4 BASE   4200   4200     0
+coils 4 HIGH   1050   1050     0
+coils 4 LOW    4200   4200     0
+;
+
+
+RE-SOLVING MASTER PROBLEM
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 505707.7143
+
+:        Make1     Inv1    Sell1    :=
+bands   3714.29   1724.29   2000
+coils   3000         0      3000
+;
+
+
+ITERATION 2
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 199697.1429
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 140323
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 102623.9714
+
+GAP = 517.171
+
+:               Make      Sell     Inv    :=
+bands 2 BASE   4400      6124.29     0
+bands 2 HIGH   6875.71   8500      100
+bands 2 LOW    4400      6124.29     0
+bands 3 HIGH   6400      6500        0
+bands 4 BASE   2000      2000        0
+bands 4 HIGH   6500      6500        0
+bands 4 LOW    2000      2000        0
+coils 2 BASE   2520      2500       20
+coils 2 HIGH    787       787        0
+coils 2 LOW    2520      2500       20
+coils 3 BASE   4480      4500        0
+coils 3 LOW    4480      4500        0
+coils 4 BASE   4200      4200        0
+coils 4 HIGH   1050      1050        0
+coils 4 LOW    4200      4200        0
+;
+
+
+RE-SOLVING MASTER PROBLEM
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 505640.2571
+
+:      Make1  Inv1  Sell1    :=
+bands   2590   600   2000
+coils   3787   787   3000
+;
+
+
+ITERATION 3
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 198533.5071
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 139417.95
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 102106.8
+
+
+OPTIMAL SOLUTION FOUND
+Expected Profit = 505640.257143
+
+SCENARIO BASE
+:       MAKE[p,t,s] SELL[p,t,s] INV[p,t,s]    :=
+bands 1    2590        2000         600
+bands 2    5524.29     6124.29        0
+bands 4    2000        2000           0
+coils 1    3787        3000         787
+coils 2    1733        2500          20
+coils 3    4480        4500           0
+coils 4    4200        4200           0
+;
+
+SCENARIO LOW
+:       MAKE[p,t,s] SELL[p,t,s] INV[p,t,s]    :=
+bands 1    2590        2000         600
+bands 2    5524.29     6124.29        0
+bands 4    2000        2000           0
+coils 1    3787        3000         787
+coils 2    1733        2500          20
+coils 3    4480        4500           0
+coils 4    4200        4200           0
+;
+
+SCENARIO HIGH
+:       MAKE[p,t,s] SELL[p,t,s] INV[p,t,s]    :=
+bands 1     2590        2000        600
+bands 2     8000        8500        100
+bands 3     6400        6500          0
+bands 4     6500        6500          0
+coils 1     3787        3000        787
+coils 2        0         787          0
+coils 4     1050        1050          0
+;
+
+
+T is already defined
+context:  param  >>> T  <<< := 4;
+
+PROD is already defined
+context:  set  >>> PROD  <<< := bands coils;
+
+SCEN is already defined
+context:  set  >>> SCEN  <<< := BASE LOW HIGH ;
+
+avail is already defined
+context:  param  >>> avail  <<< :=  1 40  2 40  3 32  4 40 ;
+
+rate is already defined
+context:  param  >>> rate  <<< :=  bands 200   coils 140 ;
+
+inv0 is already defined
+context:  param  >>> inv0  <<< :=  bands  10   coils   0 ;
+
+prodcost is already defined
+context:  param  >>> prodcost  <<< :=  bands 10    coils  11 ;
+
+invcost is already defined
+context:  param  >>> invcost  <<<  :=  bands  2.5  coils   3 ;
+
+revenue is already defined
+context:  param  >>> revenue <<< 
+
+market is already defined
+context:  param  >>> market: <<<     1     2     3     4 :=
+
+Bailing out after 10 warnings.
+
+syntax error
+context:  param market:     >>> 1  <<<     2     3     4 :=
+
+prob is already defined
+context:  param  >>> prob  <<< :=  BASE  .45
+
+syntax error
+context:  problem  >>> Master:  <<< Make1, Inv1, Sell1, Min_Stage2_Profit,
+
+syntax error
+context:  problem  >>> Sub:  <<< Make, Inv, Sell, Stage2_Profit, Time, Balance2, Balance;
+
+sub_profit is already defined
+context:  param  >>> sub_profit  <<< {SCEN};
+
+tmp_time_price is already defined
+context:  param  >>> tmp_time_price  <<< {2..T,SCEN,1..nCUT+1};
+
+tmp_bal2_price is already defined
+context:  param  >>> tmp_bal2_price  <<< {PROD,SCEN,1..nCUT+1};
+
+tmp_sell_lim_price is already defined
+context:  param  >>> tmp_sell_lim_price  <<< {PROD,2..T,SCEN,1..nCUT+1};
+
+GAP is already defined
+context:  param  >>> GAP  <<< default Infinity;
+
+ITERATION 1
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 179523
+Error executing "let" command:
+error processing param tmp_time_price:
+	18 invalid subscripts discarded:
+	tmp_time_price[2,'BASE',2]
+	tmp_time_price[3,'BASE',2]
+	tmp_time_price[4,'BASE',2]
+	and 15 more.
+Error executing "let" command:
+error processing param tmp_bal2_price:
+	12 invalid subscripts discarded:
+	tmp_bal2_price['bands','BASE',2]
+	tmp_bal2_price['coils','BASE',2]
+	tmp_bal2_price['bands','LOW',2]
+	and 9 more.
+Error executing "let" command:
+error processing param tmp_sell_lim_price:
+	36 invalid subscripts discarded:
+	tmp_sell_lim_price['bands',2,'BASE',2]
+	tmp_sell_lim_price['bands',3,'BASE',2]
+	tmp_sell_lim_price['bands',4,'BASE',2]
+	and 33 more.
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 125839
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 93830
+
+GAP = 517.171
+
+:              Make   Sell   Inv    :=
+bands 2 BASE   4400   4400     0
+bands 2 HIGH   8000   7900   100
+bands 2 LOW    4400   4400     0
+bands 3 HIGH   6400   6500     0
+bands 4 BASE   2000   2000     0
+bands 4 HIGH   6500   6500     0
+bands 4 LOW    2000   2000     0
+coils 2 BASE   2520   2500    20
+coils 2 LOW    2520   2500    20
+coils 3 BASE   4480   4500     0
+coils 3 LOW    4480   4500     0
+coils 4 BASE   4200   4200     0
+coils 4 HIGH   1050   1050     0
+coils 4 LOW    4200   4200     0
+;
+
+Error executing "let" command:
+error processing symbolic param cut_type:
+	invalid subscript cut_type[2] discarded.
+Error executing "let" command:
+error processing param time_price:
+	9 invalid subscripts discarded:
+	time_price[2,'BASE',2]
+	time_price[2,'LOW',2]
+	time_price[2,'HIGH',2]
+	and 6 more.
+Error executing "let" command:
+error processing param bal2_price:
+	6 invalid subscripts discarded:
+	bal2_price['bands','BASE',2]
+	bal2_price['bands','LOW',2]
+	bal2_price['bands','HIGH',2]
+	and 3 more.
+Error executing "let" command:
+error processing param sell_lim_price:
+	18 invalid subscripts discarded:
+	sell_lim_price['bands',2,'BASE',2]
+	sell_lim_price['bands',2,'LOW',2]
+	sell_lim_price['bands',2,'HIGH',2]
+	and 15 more.
+
+RE-SOLVING MASTER PROBLEM
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 506826
+
+:      Make1   Inv1  Sell1    :=
+bands   1990      0   2000
+coils   4207   4207      0
+;
+
+
+ITERATION 2
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 242426.7
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 170557.1
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 120072
+
+GAP = 517.171
+
+:              Make   Sell   Inv     :=
+bands 2 BASE   8000   8000      0
+bands 2 HIGH   8000   7900    100
+bands 2 LOW    8000   8000      0
+bands 3 BASE   2410   2410      0
+bands 3 HIGH   6400   6500      0
+bands 3 LOW    2410   2410      0
+bands 4 BASE   2000   2000      0
+bands 4 HIGH   6500   6500      0
+bands 4 LOW    2000   2000      0
+coils 2 BASE      0   2500   1707
+coils 2 HIGH      0   2500   1707
+coils 2 LOW       0   2500   1707
+coils 3 BASE   2793   4500      0
+coils 3 HIGH      0   1707      0
+coils 3 LOW    2793   4500      0
+coils 4 BASE   4200   4200      0
+coils 4 HIGH   1050   1050      0
+coils 4 LOW    4200   4200      0
+;
+
+
+RE-SOLVING MASTER PROBLEM
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 506482.284
+
+:      Make1    Inv1      Sell1     :=
+bands   1990      0      2000
+coils   4207   1800.99   2406.01
+;
+
+
+ITERATION 3
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 206962.3333
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 145379.716
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 105356.321
+
+GAP = 517.171
+
+:                Make      Sell     Inv    :=
+bands 2 BASE   6972.84    6972.84     0
+bands 2 HIGH   8000       7900      100
+bands 2 LOW    6972.84    6972.84     0
+bands 3 HIGH   6400       6500        0
+bands 4 BASE   2000       2000        0
+bands 4 HIGH   6500       6500        0
+bands 4 LOW    2000       2000        0
+coils 2 BASE    719.012   2500       20
+coils 2 HIGH      0       1800.99     0
+coils 2 LOW     719.012   2500       20
+coils 3 BASE   4480       4500        0
+coils 3 LOW    4480       4500        0
+coils 4 BASE   4200       4200        0
+coils 4 HIGH   1050       1050        0
+coils 4 LOW    4200       4200        0
+;
+
+
+RE-SOLVING MASTER PROBLEM
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 505707.7143
+
+:        Make1     Inv1    Sell1    :=
+bands   3714.29   1724.29   2000
+coils   3000         0      3000
+;
+
+
+ITERATION 4
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 199697.1429
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 140323
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 102623.9714
+
+GAP = 517.171
+
+:               Make      Sell     Inv    :=
+bands 2 BASE   4400      6124.29     0
+bands 2 HIGH   6875.71   8500      100
+bands 2 LOW    4400      6124.29     0
+bands 3 HIGH   6400      6500        0
+bands 4 BASE   2000      2000        0
+bands 4 HIGH   6500      6500        0
+bands 4 LOW    2000      2000        0
+coils 2 BASE   2520      2500       20
+coils 2 HIGH    787       787        0
+coils 2 LOW    2520      2500       20
+coils 3 BASE   4480      4500        0
+coils 3 LOW    4480      4500        0
+coils 4 BASE   4200      4200        0
+coils 4 HIGH   1050      1050        0
+coils 4 LOW    4200      4200        0
+;
+
+
+RE-SOLVING MASTER PROBLEM
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 505640.2571
+
+:      Make1  Inv1  Sell1    :=
+bands   2590   600   2000
+coils   3787   787   3000
+;
+
+
+ITERATION 5
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 198533.5071
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 139417.95
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 102106.8
+
+
+OPTIMAL SOLUTION FOUND
+Expected Profit = 505640.257143
+
+
+MAKE is already defined
+context:  param  >>> MAKE  <<< {p in PROD, t in 1..T, s in SCEN}
+
+SELL is already defined
+context:  param  >>> SELL  <<< {p in PROD, t in 1..T, s in SCEN}
+
+INV is already defined
+context:  param  >>> INV  <<< {p in PROD, t in 1..T, s in SCEN}
+
+
+id:45
+x [*] :=
+ 1  0.5
+ 2  1
+ 3  1.5
+ 4  2
+ 5  2.5
+ 6  3
+ 7  3.5
+ 8  4
+ 9  4.5
+10  5
+;
+
+
+
+id:46
+N [*,*,0]
+:   0   1    2    3    4    5     :=
+0   1   12   23   34   45   56
+1   3   14   25   36   47   57
+2   5   16   27   38   49   58
+3   7   18   29   40   51   59
+4   9   20   31   42   53   60
+
+ [*,*,1]
+:   0    1    2    3    4     :=
+0    2   13   24   35   46
+1    4   15   26   37   48
+2    6   17   28   39   50
+3    8   19   30   41   52
+4   10   21   32   43   54
+5   11   22   33   44   55
+;
+
+
+
+id:47
+0
+1
+2
+3
+First repeat done.
+4
+5
+6
+Second repeat done.
+7
+8
+9
+Third repeat done.
+10
+11
+12
+13
+Fourth repeat done.
+14
+15
+
+
+id:48
+g1 [*,*]
+:    0     1     2     3     4     :=
+1   345   285   234   168   117
+2   285   234   168   117    66
+3   236   171   117    66     0
+4   117    66     0     0     0
+5     0     0     0     0     0
+;
+
+g2 [*,*]
+:    0     1     2     3     4     :=
+1   345   285   234   168   117
+2   285   234   168   117    66
+3   236   171   117    66     0
+4   117    66     0     0     0
+5     0     0     0     0     0
+;
+
+g3 [*,*]
+:    0     1     2     3     4     :=
+1   345   285   234   168   117
+2   285   234   168   117    66
+3   236   171   117    66     0
+4   117    66     0     0     0
+5     0     0     0     0     0
+;
+
+
+
+id:49
+7 8
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 8
+Nonlin evals: obj = 3, grad = 2.
+7 8
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 8
+Nonlin evals: obj = 3, grad = 2.
+7 8
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 8
+Nonlin evals: obj = 3, grad = 2.
+7 8
+
+
+id:50
+minimize zot:
+	-1.1*(zot+x+lambda)[0] - 2.7*(zot+x+lambda)[2] + 0.55;
+
+subject to (zot+x+def):
+	x + (zot+x+lambda)[0] - (zot+x+lambda)[2] = 0.5;
+
+subject to (zot+x+sos2):
+	(zot+x+b)[1] + (zot+x+b)[2] = 1;
+
+subject to (zot+x+bound)[0]:
+	(zot+x+lambda)[0] - 3.5*(zot+x+b)[1] <= 0;
+
+subject to (zot+x+bound)[2]:
+	(zot+x+lambda)[2] - 1.5*(zot+x+b)[2] <= 0;
+
+minimize zot:
+	-2.2*(zot+x+lambda)[0] + 0.55*(zot+x+lambda)[1] - 0.8*(zot+x+lambda)[2];
+
+subject to (zot+x+cvx):
+	(zot+x+lambda)[0] + (zot+x+lambda)[1] + (zot+x+lambda)[2] = 1;
+
+subject to (zot+x+def):
+	x + 2*(zot+x+lambda)[0] - 0.5*(zot+x+lambda)[1] - (zot+x+lambda)[2] = 
+	0;
+
+subject to (zot+x+sos2):
+	(zot+x+b)[1] + (zot+x+b)[2] = 1;
+
+subject to (zot+x+bound)[0]:
+	(zot+x+lambda)[0] - (zot+x+b)[1] <= 0;
+
+subject to (zot+x+bound)[1]:
+	(zot+x+lambda)[1] - (zot+x+b)[1] - (zot+x+b)[2] <= 0;
+
+subject to (zot+x+bound)[2]:
+	(zot+x+lambda)[2] - (zot+x+b)[2] <= 0;
+
+minimize zot:
+	-1.1*(zot+x+lambda)[0] - 2.7*(zot+x+lambda)[2] + 0.55;
+
+subject to (zot+x+sos2):
+	(zot+x+b)[1] + (zot+x+b)[2] = 1;
+
+subject to (zot+x+bound)[0]:
+	(zot+x+lambda)[0] - 3.5*(zot+x+b)[1] <= 0;
+
+subject to (zot+x+bound)[2]:
+	(zot+x+lambda)[2] - 1.5*(zot+x+b)[2] <= 0;
+
+
+
+id:51
+option nl_permute 7;
+minimize zap:
+	(-1 + x[1])^2 + 3*(-3 + x[3])^2 + 5.78;
+
+minimize zip:
+	x[1] + 3*x[3] + 0.6;
+
+subject to convex:
+	x[1] + x[3] = 0.7;
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 22.65
+Nonlin evals: obj = 4, grad = 3.
+Objective = zap
+zip = 2.7
+zap = 22.65
+
+: _objname   _obj  _sobjname   _sobj    :=
+1   zip       2.7    zap       22.65
+2   zap      22.65   zip        2.7
+;
+
+option nl_permute 3;
+minimize zip:
+	x[1] + 3*x[3] + 0.6;
+
+minimize zap:
+	(-1 + x[1])^2 + 3*(-3 + x[3])^2 + 5.78;
+
+subject to convex:
+	x[1] + x[3] = 0.7;
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 1.3
+Objective = zip
+zip = 1.3
+zap = 32.87
+
+: _objname   _obj  _sobjname   _sobj    :=
+1   zip       1.3    zip        1.3
+2   zap      32.87   zap       32.87
+;
+
+
+
+id:52
+set T[1] := 3 5 8;
+set T[2] := 2 6 7 9;
+
+Error executing "display" command:
+error processing param p[2]:
+	failed check: param p[2] = -1
+		is not >= 2
+		-- not >= i;
+p [*] :=
+1   7
+2  -1
+;
+
+
+
+id:53
+CPLEX 12.6.3.0: optimal integer solution; objective -2
+XXX MIP simplex iterations
+0 branch-and-bound nodes
+x = 4
+
+
+
+id:54
+Solution determined by presolve;
+objective Number = 25.
+
+
+id:55
+r :=
+1 x    311
+1 y    522
+2 x    999
+2 y   1998
+;
+
+
+
+id:56
+pattern [*,*]
+:        1   2   3   4   5    :=
+7        0   0   1   0   0
+8.5      1   0   0   0   0
+9.25     0   2   0   0   0
+10       0   1   1   0   1
+10.125   0   0   1   0   0
+11.25    0   0   0   0   1
+11.625   0   0   0   0   1
+12.25    2   0   0   1   0
+12.5     0   9   8   1   0
+13.875   0   0   1   0   0
+23.25    0   0   0   5   0
+54       2   0   0   0   2
+;
+
+
+
+id:57
+Nonsquare complementarity system:
+	1 complementarities including 1 equations
+	4 variables
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 0
+Nonlin evals: constrs = 3, Jac = 2.
+Objective = find a feasible point.
+
+
+id:58
+minimize zot:
+	2*x[1] + 4*x[2] + 8*x[4] + 10*x[5] + 12*x[6] + 6*(bletch+x[3]+s)[0] + 
+	6*(bletch+x[3]+s)[1] + 91;
+
+minimize zip:
+	11*x[1] + 12*x[2] + x[4] + 2*x[5] + 12*x[6] + (bletch+x[3]+s)[0] + 
+	(bletch+x[3]+s)[1] + 91;
+
+minimize zap:
+	x[1] + 0.5*x[2];
+
+minimize yip:
+	10*x[1] + 10*x[2] - 3*x[4] - 3*x[5] + 6*x[6] - 2*(bletch+x[3]+s)[0] - 
+	2*(bletch+x[3]+s)[1];
+
+minimize yap:
+	x[1] + 0.5*x[2] + 3*(bletch+x[3]+s)[0] + 3*(bletch+x[3]+s)[1] + 11;
+
+minimize pzap:
+	x[1] + 2*x[2] + 4*x[4] + 5*x[5] + 6*x[6] + 3*(bletch+x[3]+s)[0] + 
+	3*(bletch+x[3]+s)[1] + 34;
+
+subject to bletch:
+	2*x[2] - (bletch+x[3]+s)[0] + 2*(bletch+x[3]+s)[1] <= 17;
+
+subject to xub1:
+	x[1] + 2*x[2] + 4*x[4] + 5*x[5] + 6*x[6] + 3*(bletch+x[3]+s)[0] + 
+	3*(bletch+x[3]+s)[1] <= 13;
+
+subject to xub2:
+	x[1] + 4*x[2] + 16*x[4] + 25*x[5] + 36*x[6] + 9*(bletch+x[3]+s)[0] + 
+	9*(bletch+x[3]+s)[1] <= 23;
+
+
+Presolve eliminates 6 constraints and 12 variables.
+Substitution eliminates 1 variable.
+7 piecewise-linear terms replaced by 2 variables and 1 constraints.
+Adjusted problem:
+7 variables, all linear
+3 constraints, all linear; 17 nonzeros
+	3 inequality constraints
+6 objectives, all linear; 34 nonzeros.
+
+:   f   y    x.ub1       x.ub2      :=
+1   1   1   Infinity   13
+2   2   2   Infinity    5.75
+3   3   3   Infinity    2.55556
+4   4   4   Infinity    1.4375
+5   5   5   Infinity    0.92
+6   6   6   Infinity    0.638889
+;
+
+
+
+id:59
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 118.0594032
+
+
+id:60
+h = simpbit.dll
+t = tab
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 118.0594032
+Buy [*] :=
+BEEF   5.36061
+ CHK   2
+FISH   2
+ HAM  10
+ MCH  10
+ MTL  10
+ SPG   9.30605
+ TUR   2
+;
+
+h = simpbit.dll
+t = bit
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 118.0594032
+Buy [*] :=
+BEEF   5.36061
+ CHK   2
+FISH   2
+ HAM  10
+ MCH  10
+ MTL  10
+ SPG   9.30605
+ TUR   2
+;
+
+h = simpbit.dll
+t = abt
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 118.0594032
+Buy [*] :=
+BEEF   5.36061
+ CHK   2
+FISH   2
+ HAM  10
+ MCH  10
+ MTL  10
+ SPG   9.30605
+ TUR   2
+;
+
+h = fullbit.dll
+t = tab
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 118.0594032
+Buy [*] :=
+BEEF   5.36061
+ CHK   2
+FISH   2
+ HAM  10
+ MCH  10
+ MTL  10
+ SPG   9.30605
+ TUR   2
+;
+
+h = fullbit.dll
+t = bit
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 118.0594032
+Buy [*] :=
+BEEF   5.36061
+ CHK   2
+FISH   2
+ HAM  10
+ MCH  10
+ MTL  10
+ SPG   9.30605
+ TUR   2
+;
+
+
+
+id:61
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 25
+Nonlin evals: obj = 3, grad = 2.
+: _conname _con    :=
+1   '=y'      0
+2   ybound   10
+;
+
+: _varname _var _var.rc    :=
+1   x        1      0
+2   y        5      0
+;
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective -121
+Nonlin evals: obj = 4, grad = 3.
+: _conname  _con    :=
+1   '=y'       0
+2   ybound   -22
+;
+
+: _varname _var _var.rc    :=
+1   x         3     0
+2   y        11     0
+;
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective -25
+Nonlin evals: obj = 4, grad = 3.
+: _conname  _con    :=
+1   '=y'       0
+2   ybound   -10
+;
+
+: _varname _var _var.rc    :=
+1   x        1      0
+2   y        5      0
+;
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 121
+Nonlin evals: obj = 4, grad = 3.
+: _conname _con    :=
+1   '=y'      0
+2   ybound   22
+;
+
+: _varname _var _var.rc    :=
+1   x         3     0
+2   y        11     0
+;
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 121
+Nonlin evals: obj = 4, grad = 3.
+: _conname _con    :=
+1   '=y'      0
+2   ybound   22
+;
+
+: _varname _var _var.rc    :=
+1   x        -3     0
+2   y        11     0
+;
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective -25
+Nonlin evals: obj = 4, grad = 3.
+: _conname  _con    :=
+1   '=y'       0
+2   ybound   -10
+;
+
+: _varname _var _var.rc    :=
+1   x        -1     0
+2   y         5     0
+;
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective -121
+Nonlin evals: obj = 4, grad = 3.
+: _conname  _con    :=
+1   '=y'       0
+2   ybound   -22
+;
+
+: _varname _var _var.rc    :=
+1   x        -3     0
+2   y        11     0
+;
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 25
+Nonlin evals: obj = 4, grad = 3.
+: _conname _con    :=
+1   '=y'      0
+2   ybound   10
+;
+
+: _varname _var _var.rc    :=
+1   x        -1     0
+2   y         5     0
+;
+
+
+
+id:62
+MINOS 5.51: ignoring integrality of 8 variables
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 118.0594032
+
+
+id:63
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 74.27382022
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 30.92537313
+total_cost.result [*] :=
+'A&P'  solved
+JEWEL  '?'
+ VONS  '?'
+;
+
+total_number.result = solved
+
+
+
+id:64
+p :=
+1 1     5
+1 2   100
+1 3   100
+2 1   300
+2 2     3
+2 3   201
+;
+
+
+
+id:65
+set reach := (a,b) (a,c) (b,d) (c,e) (f,g) (f,h) (a,d) (a,e);
+
+set step[1] := (a,b) (a,c) (b,d) (c,e) (f,g) (f,h);
+set step[2] := (a,b) (a,c) (b,d) (c,e) (f,g) (f,h) (a,d) (a,e);
+set step[3] := (a,b) (a,c) (b,d) (c,e) (f,g) (f,h) (a,d) (a,e);
+set step[4] := (a,b) (a,c) (b,d) (c,e) (f,g) (f,h) (a,d) (a,e);
+set step[5] := (a,b) (a,c) (b,d) (c,e) (f,g) (f,h) (a,d) (a,e);
+set step[6] := (a,b) (a,c) (b,d) (c,e) (f,g) (f,h) (a,d) (a,e);
+set step[7] := (a,b) (a,c) (b,d) (c,e) (f,g) (f,h) (a,d) (a,e);
+
+
+
+id:66
+set A := a b;
+
+set B := a b;
+
+set B := c d;
+
+
+
+id:67
+MINOS 5.51: ignoring integrality of 4 variables
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 10.69861384
+Nonlin evals: obj = 9, grad = 8.
+:   p   q   r    :=
+1   0   1   1
+2   0   1   1
+;
+
+:      x          y         z         v         w       :=
+1   1          1         1          1         1
+2   1          3         3          7         7
+3   1          6         6         25        25
+4   0.714286   8.85714   8.04082   60.4286   57.1633
+;
+
+
+
+id:68
+i = 1
+
+minimize zot[1]:
+	(x[1] - 0.5)^2;
+
+subject to convex:
+	x[1] + x[2] + x[3] = 1;
+
+i = 2
+
+minimize zot[2]:
+	(x[1] + 2*x[2] - 0.5)^2;
+
+subject to convex:
+	x[1] + x[2] + x[3] = 1;
+
+i = 3
+
+minimize zot[3]:
+	sin(x[3]);
+
+subject to convex:
+	x[1] + x[2] + x[3] = 1;
+
+
+
+id:69
+minimize cmcme1:
+	6*y;
+
+minimize cmcme2:
+	6*y;
+
+minimize cmcde1:
+	6/y;
+
+minimize cmcde2:
+	6/y;
+
+minimize cmedc1:
+	0.666667*y;
+
+minimize cmedc2:
+	0.666667*y;
+
+minimize cdcme1:
+	0.666667/y;
+
+minimize cdcme2:
+	1.5*y;
+
+minimize cdcde1:
+	0.666667*y;
+
+minimize cdcde2:
+	1.5/y;
+
+minimize cdedc1:
+	6/y;
+
+minimize cdedc2:
+	0.166667*y;
+
+minimize cmeDc1:
+	0.666667*y;
+
+minimize cdeDc1:
+	0.666667/y;
+
+minimize edcDc1:
+	0.166667*y;
+
+minimize aa1:
+	(14 + 2*y + 3*y + 4*y + 5*y)^2;
+
+minimize aa1p:
+	(14 + 2*y + 3*y + 4*y + 5*y)^2;
+
+minimize aa1q:
+	(51 + 2*y + 3*y + 4*y + 5*y)^2;
+
+minimize aa1r:
+	(23 - (2*y + 3*y + 4*y + 5*y))^2;
+
+minimize aa2:
+	(7 + 2*y + y)^2;
+
+minimize aa2p:
+	(7 + 2*y + y)^2;
+
+minimize aa3:
+	(2 + 2*y + y - y)^2;
+
+minimize aa3p:
+	(2 + 2*y + y - y)^2;
+
+minimize dist1:
+	10*z[2] + 15*z[3] + 20*z[4] + 25*z[5];
+
+minimize dist2:
+	(10*z[2] + 15*z[3] + 20*z[4] + 25*z[5])^2;
+
+minimize dist3:
+	(70 + 20*z[2] + 30*z[3] + 40*z[4] + 50*z[5])^2;
+
+option presolve_assoc 0;
+minimize cmcme1:
+	6*y;
+
+minimize cmcme2:
+	6*y;
+
+minimize cmcde1:
+	2*(3/y);
+
+minimize cmcde2:
+	2*(3/y);
+
+minimize cmedc1:
+	0.666667*y;
+
+minimize cmedc2:
+	0.666667*y;
+
+minimize cdcme1:
+	2/(3*y);
+
+minimize cdcme2:
+	1.5*y;
+
+minimize cdcde1:
+	2/(3/y);
+
+minimize cdcde2:
+	3/y/2;
+
+minimize cdedc1:
+	2/(y/3);
+
+minimize cdedc2:
+	0.166667*y;
+
+minimize cmeDc1:
+	0.666667*y;
+
+minimize cdeDc1:
+	2/y/3;
+
+minimize edcDc1:
+	0.166667*y;
+
+minimize aa1:
+	((2 + 2*y) + (3 + 3*y) + (4 + 4*y) + (5 + 5*y))^2;
+
+minimize aa1p:
+	((2 + 2*y) + (3 + 3*y) + (4 + 4*y) + (5 + 5*y))^2;
+
+minimize aa1q:
+	((2 + 2*y) + (3 + 3*y) + (4 + 4*y) + (5 + 5*y) + 37)^2;
+
+minimize aa1r:
+	(37 - ((2 + 2*y) + (3 + 3*y) + (4 + 4*y) + (5 + 5*y)))^2;
+
+minimize aa2:
+	(2*y + 3 + (4 + y))^2;
+
+minimize aa2p:
+	(3 + 2*y + (4 + y))^2;
+
+minimize aa3:
+	(2*y + 3 + (4 + y) - (5 + y))^2;
+
+minimize aa3p:
+	(3 + 2*y + (4 + y) - (5 + y))^2;
+
+minimize dist1:
+	10*z[2] + 15*z[3] + 20*z[4] + 25*z[5];
+
+minimize dist2:
+	(5*(2*z[2] + 3*z[3] + 4*z[4] + 5*z[5]))^2;
+
+minimize dist3:
+	(5*(2*(1 + 2*z[2]) + 3*(1 + 2*z[3]) + 4*(1 + 2*z[4]) + 5*(1 + 2*z[5])))
+	^2;
+
+
+
+id:70
+set S := 0 11 21 12 22;
+
+set  T[1] := 0 1 11 21 2 12 22;
+
+
+
+id:71
+set S := a b c x;
+
+t = x
+
+set S := a b c x y;
+
+t = y
+
+set S := a b c x y z;
+
+t = z
+
+
+
+id:72
+s = a
+
+set T := a;
+
+set T := a;
+
+s = b
+
+set T := b;
+
+set T := b;
+
+
+
+id:73
+goo :=
+1 1    10
+1 2    20
+1 3    30
+1 4    40
+2 1     1
+2 2     2
+2 3     3
+3 1   100
+3 2   200
+3 3   300
+3 4   400
+3 5   500
+3 6   600
+3 7   700
+;
+
+
+
+id:74
+:   p    x  x.zap    :=
+a    .    0    0
+b   10   10   10
+c    .    0    0
+;
+
+:   _varname _var.zap    :=
+1   "x['a']"      0
+2   "x['b']"     20
+3   "x['c']"      0
+4   y            10
+;
+
+
+
+id:75
+:   p    x  x.zap    :=
+a    .    0    0
+b   10   10   10
+c    .    0    0
+;
+
+:   _varname _var.zap    :=
+1   "x['a']"      0
+2   "x['b']"     20
+3   "x['c']"      0
+4   y            10
+;
+
+
+
+id:76
+odd [*] :=
+  1   3    14  47    27 107    40 179    53 251    66 331    79 409    92 487
+  2   5    15  53    28 109    41 181    54 257    67 337    80 419    93 491
+  3   7    16  59    29 113    42 191    55 263    68 347    81 421    94 499
+  4  11    17  61    30 127    43 193    56 269    69 349    82 431    95 503
+  5  13    18  67    31 131    44 197    57 271    70 353    83 433    96 509
+  6  17    19  71    32 137    45 199    58 277    71 359    84 439    97 521
+  7  19    20  73    33 139    46 211    59 281    72 367    85 443    98 523
+  8  23    21  79    34 149    47 223    60 283    73 373    86 449    99 541
+  9  29    22  83    35 151    48 227    61 293    74 379    87 457   100 547
+ 10  31    23  89    36 157    49 229    62 307    75 383    88 461
+ 11  37    24  97    37 163    50 233    63 311    76 389    89 463
+ 12  41    25 101    38 167    51 239    64 313    77 397    90 467
+ 13  43    26 103    39 173    52 241    65 317    78 401    91 479
+;
+
+
+
+id:77
+factorial[i] [*] :=
+1   1
+2   2
+3   6
+4  24
+;
+
+1
+2
+
+
+id:78
+x = 2
+g = 1
+gp = 7
+
+x = 1.85714
+g = 0.0991254
+
+
+
+id:79
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 0.5
+Nonlin evals: obj = 36, grad = 35, constrs = 36, Jac = 35.
+
+
+id:80
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 0
+Nonlin evals: obj = 7, grad = 6.
+9
+
+
+id:81
+minimize zot[1]:
+	x - 6;
+
+subject to (x+IUlb):
+	x - 10*(x+b)[0] - 25*(x+b)[1] - 50*(x+b)[2] >= 0;
+
+subject to (x+IUub):
+	-x + 15*(x+b)[0] + 30*(x+b)[1] + 60*(x+b)[2] >= 0;
+
+subject to (x+sos1):
+	(x+b)[0] + (x+b)[1] + (x+b)[2] = 1;
+
+CPLEX 12.6.3.0: optimal integer solution; objective 4
+XXX MIP simplex iterations
+0 branch-and-bound nodes
+x = 10
+
+minimize zot[2]:
+	-(zot[2]+x+s)[0] + (zot[2]+x+s)[1];
+
+subject to (x+IUlb):
+	(zot[2]+x+s)[0] + (zot[2]+x+s)[1] - 10*(x+b)[0] - 25*(x+b)[1] - 
+	50*(x+b)[2] >= 0;
+
+subject to (x+IUub):
+	-(zot[2]+x+s)[0] - (zot[2]+x+s)[1] + 15*(x+b)[0] + 30*(x+b)[1] + 
+	60*(x+b)[2] >= 0;
+
+subject to (x+sos1):
+	(x+b)[0] + (x+b)[1] + (x+b)[2] = 1;
+
+CPLEX 12.6.3.0: optimal integer solution; objective -12
+XXX MIP simplex iterations
+0 branch-and-bound nodes
+x = 12
+
+minimize zot[3]:
+	-(zot[3]+x+s)[0] + (zot[3]+x+s)[1];
+
+subject to (x+IUlb):
+	(zot[3]+x+s)[0] + (zot[3]+x+s)[1] - 10*(x+b)[0] - 25*(x+b)[1] - 
+	50*(x+b)[2] >= 0;
+
+subject to (x+IUub):
+	-(zot[3]+x+s)[0] - (zot[3]+x+s)[1] + 15*(x+b)[0] + 30*(x+b)[1] + 
+	60*(x+b)[2] >= 0;
+
+subject to (x+sos1):
+	(x+b)[0] + (x+b)[1] + (x+b)[2] = 1;
+
+CPLEX 12.6.3.0: optimal integer solution; objective -27
+XXX MIP simplex iterations
+0 branch-and-bound nodes
+x = 27
+
+minimize zot[4]:
+	-(zot[4]+x+s)[0] + (zot[4]+x+s)[1];
+
+subject to (x+IUlb):
+	(zot[4]+x+s)[0] + (zot[4]+x+s)[1] - 10*(x+b)[0] - 25*(x+b)[1] - 
+	50*(x+b)[2] >= 0;
+
+subject to (x+IUub):
+	-(zot[4]+x+s)[0] - (zot[4]+x+s)[1] + 15*(x+b)[0] + 30*(x+b)[1] + 
+	60*(x+b)[2] >= 0;
+
+subject to (x+sos1):
+	(x+b)[0] + (x+b)[1] + (x+b)[2] = 1;
+
+CPLEX 12.6.3.0: optimal integer solution; objective -56
+XXX MIP simplex iterations
+0 branch-and-bound nodes
+x = 56
+
+minimize zot[5]:
+	-x;
+
+subject to (x+IUlb):
+	x - 10*(x+b)[0] - 25*(x+b)[1] - 50*(x+b)[2] >= 0;
+
+subject to (x+IUub):
+	-x + 15*(x+b)[0] + 30*(x+b)[1] + 60*(x+b)[2] >= 0;
+
+subject to (x+sos1):
+	(x+b)[0] + (x+b)[1] + (x+b)[2] = 1;
+
+CPLEX 12.6.3.0: optimal integer solution; objective -60
+XXX MIP simplex iterations
+0 branch-and-bound nodes
+x = 60
+
+
+
+id:82
+q [*] :=
+1   12
+2   56
+4  132
+;
+
+r :=
+1 1   101
+1 2   201
+1 3   301
+1 4   401
+2 1   104
+2 2   204
+2 3   304
+2 4   404
+3 1   109
+3 2   209
+3 3   309
+3 4   409
+4 1   116
+4 2   216
+4 3   316
+4 4   416
+;
+
+1 3 12 1 1
+i = 1
+p[i] = 3
+q[i] = 12
+ord(i, A) = 1
+ord(i, A) = 1
+
+1 3 12 1 1
+End of loop with i = 1
+2 7 56 2 2
+i = 2
+p[i] = 7
+q[i] = 56
+ord(i, A) = 2
+ord(i, A) = 2
+
+2 7 56 2 2
+End of loop with i = 2
+Error executing "print" command:
+	no value for p[3]
+
+
+id:83
+x = 1
+y = 2
+z = 5
+p = 3
+q = 4
+
+x = 1
+y = 2
+z = 19
+p = 3
+q = 4
+
+
+
+id:84
+:        x1     x2    :=
+1 1   1          1
+1 2   1          1
+1 3   1          1
+2 1   0.333333   0
+2 2   0.333333   0
+2 3   0.333333   0
+3 1   0.333333   0
+3 2   0.333333   0
+3 3   0.333333   0
+;
+
+:    V1     V2     :=
+1   8093   8099
+2   8093   8099
+3   8093   8099
+;
+
+
+
+id:85
+minimize o1:
+	4*x[1] + 6*x[2] + 5*x[3] + 7;
+
+minimize o2:
+	(x[1] + x[2] + x[3] + y + z)^2;
+
+minimize o3:
+	4*x[1] + 6*x[2] + 5*x[3];
+
+minimize o4:
+	(x[1] + x[2] + x[3] + x[1] + 2*x[2] + 3*x[3] + 2*x[1] + 3*x[2] + x[3])^
+	2;
+
+subject to c2:
+	log(x[1] + x[2] + x[3] + y + z) >= 2;
+
+subject to c4:
+	log(x[1] + x[2] + x[3] + x[1] + 2*x[2] + 3*x[3] + 2*x[1] + 3*x[2] + 
+	x[3]) >= 2;
+
+subject to c1:
+	4*x[1] + 6*x[2] + 5*x[3] >= 3;
+
+subject to c3:
+	4*x[1] + 6*x[2] + 5*x[3] >= 10;
+
+
+
+id:86
+i = 1
+
+o = yes
+p = yes
+q = yes
+
+i = 5
+
+o = no
+p = no
+q = no
+
+i = 17
+
+o = no
+p = no
+q = no
+
+
+
+id:87
+set S := a P b Q c V;
+
+set S := a b c P Q V;
+
+
+
+id:88
+set A := (1,1,a) (1,2,b) (2,1,c) (2,2,d) (1,1,e) (2,2,f) (3,4,z);
+
+set S[1,1] := a;
+set S[1,2] := b;
+set S[2,1] := c;
+set S[2,2] := d;
+
+set T[1] := a c e t;
+set T[2] := b d f t;
+
+set U[1] := a d g t u;
+set U[2] := b c h t u;
+
+start of i = 1
+set  union {j in 1 .. 2}  S[i,j] := a b;
+
+set  union {j in 1 .. 2}  U[j] := a d g t u b c h;
+
+set  inter {j in 1 .. 2}  T[j] := t;
+
+set  inter {j in 1 .. 2}  U[j] := t u;
+
+start of j = 1
+i = 1
+j = 1
+
+Trying display S[1,1]...
+set  S[i,j] := a;
+
+set  S[i,j] := a;
+
+set  T[i] := a c e t;
+
+set  U[j] := a d g t u;
+
+set i .. j := 1;
+
+set ( S[i,j]) cross ( T[i]) cross ( U[j]) :=
+(a,a,a)   (a,a,t)   (a,c,d)   (a,c,u)   (a,e,g)   (a,t,a)   (a,t,t)
+(a,a,d)   (a,a,u)   (a,c,g)   (a,e,a)   (a,e,t)   (a,t,d)   (a,t,u)
+(a,a,g)   (a,c,a)   (a,c,t)   (a,e,d)   (a,e,u)   (a,t,g);
+
+print{(a,b,c) in S[i,j] cross T[i] cross U[j]}: a, b, c;
+a a a
+a a d
+a a g
+a a t
+a a u
+a c a
+a c d
+a c g
+a c t
+a c u
+a e a
+a e d
+a e g
+a e t
+a e u
+a t a
+a t d
+a t g
+a t t
+a t u
+print{(a,b,c) in S3}: a,b,c;
+a a a
+a a d
+a a g
+a a t
+a a u
+a c a
+a c d
+a c g
+a c t
+a c u
+a e a
+a e d
+a e g
+a e t
+a e u
+a t a
+a t d
+a t g
+a t t
+a t u
+set ( T[i]) diff ( S[i,j]) := c e t;
+
+set ( U[i]) diff ( S[i,j]) := d g t u;
+
+set ( T[j]) diff ( S[j,i]) := c e t;
+
+set ( U[j]) diff ( S[j,i]) := d g t u;
+
+set ( T[i]) diff ( U[j]) := c e;
+
+set ( U[j]) diff ( T[i]) := d g u;
+
+set ( T[i]) symdiff ( U[j]) := c e d g u;
+
+set ( T[i]) union ( U[j]) := a c e t d g u;
+
+set ( U[j]) union ( T[i]) := a d g t u c e;
+
+set  setof {(i,j,k) in A} (i,j,k) := (1,1,a) (1,1,e);
+
+set (if i < j then  T[i] else  U[j]) := a d g t u;
+
+end of j = 1
+start of j = 2
+i = 1
+j = 2
+
+Trying display S[1,2]...
+set  S[i,j] := b;
+
+set  S[i,j] := b;
+
+set  T[i] := a c e t;
+
+set  U[j] := b c h t u;
+
+set i .. j := 1 2;
+
+set ( S[i,j]) cross ( T[i]) cross ( U[j]) :=
+(b,a,b)   (b,a,t)   (b,c,c)   (b,c,u)   (b,e,h)   (b,t,b)   (b,t,t)
+(b,a,c)   (b,a,u)   (b,c,h)   (b,e,b)   (b,e,t)   (b,t,c)   (b,t,u)
+(b,a,h)   (b,c,b)   (b,c,t)   (b,e,c)   (b,e,u)   (b,t,h);
+
+print{(a,b,c) in S[i,j] cross T[i] cross U[j]}: a, b, c;
+b a b
+b a c
+b a h
+b a t
+b a u
+b c b
+b c c
+b c h
+b c t
+b c u
+b e b
+b e c
+b e h
+b e t
+b e u
+b t b
+b t c
+b t h
+b t t
+b t u
+print{(a,b,c) in S3}: a,b,c;
+b a b
+b a c
+b a h
+b a t
+b a u
+b c b
+b c c
+b c h
+b c t
+b c u
+b e b
+b e c
+b e h
+b e t
+b e u
+b t b
+b t c
+b t h
+b t t
+b t u
+set ( T[i]) diff ( S[i,j]) := a c e t;
+
+set ( U[i]) diff ( S[i,j]) := a d g t u;
+
+set ( T[j]) diff ( S[j,i]) := b d f t;
+
+set ( U[j]) diff ( S[j,i]) := b h t u;
+
+set ( T[i]) diff ( U[j]) := a e;
+
+set ( U[j]) diff ( T[i]) := b h u;
+
+set ( T[i]) symdiff ( U[j]) := a e b h u;
+
+set ( T[i]) union ( U[j]) := a c e t b h u;
+
+set ( U[j]) union ( T[i]) := b c h t u a e;
+
+set  setof {(i,j,k) in A} (i,j,k) := (1,2,b);
+
+set (if i < j then  T[i] else  U[j]) := a c e t;
+
+end of j = 2
+end of i = 1
+start of i = 2
+set  union {j in 1 .. 2}  S[i,j] := c d;
+
+set  union {j in 1 .. 2}  U[j] := a d g t u b c h;
+
+set  inter {j in 1 .. 2}  T[j] := t;
+
+set  inter {j in 1 .. 2}  U[j] := t u;
+
+start of j = 1
+i = 2
+j = 1
+
+Trying display S[2,1]...
+set  S[i,j] := c;
+
+set  S[i,j] := c;
+
+set  T[i] := b d f t;
+
+set  U[j] := a d g t u;
+
+set i .. j := ; # empty
+
+set ( S[i,j]) cross ( T[i]) cross ( U[j]) :=
+(c,b,a)   (c,b,t)   (c,d,d)   (c,d,u)   (c,f,g)   (c,t,a)   (c,t,t)
+(c,b,d)   (c,b,u)   (c,d,g)   (c,f,a)   (c,f,t)   (c,t,d)   (c,t,u)
+(c,b,g)   (c,d,a)   (c,d,t)   (c,f,d)   (c,f,u)   (c,t,g);
+
+print{(a,b,c) in S[i,j] cross T[i] cross U[j]}: a, b, c;
+c b a
+c b d
+c b g
+c b t
+c b u
+c d a
+c d d
+c d g
+c d t
+c d u
+c f a
+c f d
+c f g
+c f t
+c f u
+c t a
+c t d
+c t g
+c t t
+c t u
+print{(a,b,c) in S3}: a,b,c;
+c b a
+c b d
+c b g
+c b t
+c b u
+c d a
+c d d
+c d g
+c d t
+c d u
+c f a
+c f d
+c f g
+c f t
+c f u
+c t a
+c t d
+c t g
+c t t
+c t u
+set ( T[i]) diff ( S[i,j]) := b d f t;
+
+set ( U[i]) diff ( S[i,j]) := b h t u;
+
+set ( T[j]) diff ( S[j,i]) := a c e t;
+
+set ( U[j]) diff ( S[j,i]) := a d g t u;
+
+set ( T[i]) diff ( U[j]) := b f;
+
+set ( U[j]) diff ( T[i]) := a g u;
+
+set ( T[i]) symdiff ( U[j]) := b f a g u;
+
+set ( T[i]) union ( U[j]) := b d f t a g u;
+
+set ( U[j]) union ( T[i]) := a d g t u b f;
+
+set  setof {(i,j,k) in A} (i,j,k) := (2,1,c);
+
+set (if i < j then  T[i] else  U[j]) := a d g t u;
+
+end of j = 1
+start of j = 2
+i = 2
+j = 2
+
+Trying display S[2,2]...
+set  S[i,j] := d;
+
+set  S[i,j] := d;
+
+set  T[i] := b d f t;
+
+set  U[j] := b c h t u;
+
+set i .. j := 2;
+
+set ( S[i,j]) cross ( T[i]) cross ( U[j]) :=
+(d,b,b)   (d,b,t)   (d,d,c)   (d,d,u)   (d,f,h)   (d,t,b)   (d,t,t)
+(d,b,c)   (d,b,u)   (d,d,h)   (d,f,b)   (d,f,t)   (d,t,c)   (d,t,u)
+(d,b,h)   (d,d,b)   (d,d,t)   (d,f,c)   (d,f,u)   (d,t,h);
+
+print{(a,b,c) in S[i,j] cross T[i] cross U[j]}: a, b, c;
+d b b
+d b c
+d b h
+d b t
+d b u
+d d b
+d d c
+d d h
+d d t
+d d u
+d f b
+d f c
+d f h
+d f t
+d f u
+d t b
+d t c
+d t h
+d t t
+d t u
+print{(a,b,c) in S3}: a,b,c;
+d b b
+d b c
+d b h
+d b t
+d b u
+d d b
+d d c
+d d h
+d d t
+d d u
+d f b
+d f c
+d f h
+d f t
+d f u
+d t b
+d t c
+d t h
+d t t
+d t u
+set ( T[i]) diff ( S[i,j]) := b f t;
+
+set ( U[i]) diff ( S[i,j]) := b c h t u;
+
+set ( T[j]) diff ( S[j,i]) := b f t;
+
+set ( U[j]) diff ( S[j,i]) := b c h t u;
+
+set ( T[i]) diff ( U[j]) := d f;
+
+set ( U[j]) diff ( T[i]) := c h u;
+
+set ( T[i]) symdiff ( U[j]) := d f c h u;
+
+set ( T[i]) union ( U[j]) := b d f t c h u;
+
+set ( U[j]) union ( T[i]) := b c h t u d f;
+
+set  setof {(i,j,k) in A} (i,j,k) := (2,2,d) (2,2,f);
+
+set (if i < j then  T[i] else  U[j]) := b c h t u;
+
+end of j = 2
+end of i = 2
+
+
+id:89
+yes
+set B := d e;
+
+set C[1] := a b c;
+set C[2] := b d e;
+
+set B := e d;
+
+set C[1] := c b a;
+set C[2] := e d b;
+
+
+
+id:90
+e = 0
+
+presolve, constraint e:
+	Logical constraint is always false.
+e.val = 0
+
+presolve, constraint e:
+	Logical constraint is always false.
+e = 0
+e.val = 0
+
+
+
+id:91
+subject to zot:
+	3*x + 4*(zot+x+s)[0] + 6*(zot+x+s)[1] + 12*(zot+x+s)[2] <= 38;
+
+subject to (zot+x+def):
+	x - (zot+x+s)[0] - (zot+x+s)[1] - (zot+x+s)[2] = 0;
+
+
+
+id:92
+subject to bletch:
+	6*x[1] - (bletch+x[2]+lambda)[0] + 0.5*(bletch+x[2]+lambda)[1] + 
+	1.5*(bletch+x[2]+lambda)[2] + 2.5*(bletch+x[2]+lambda)[3] + 
+	7*(bletch+x[2]+lambda)[4] + 16*(bletch+x[2]+lambda)[5] + 
+	12*(bletch+x[2]+lambda)[6] >= 3;
+
+subject to (bletch+x[2]+cvx):
+	(bletch+x[2]+lambda)[1] + (bletch+x[2]+lambda)[2] + 
+	(bletch+x[2]+lambda)[3] + (bletch+x[2]+lambda)[4] + 
+	(bletch+x[2]+lambda)[5] = 1;
+
+subject to (bletch+x[2]+def):
+	x[2] + (bletch+x[2]+lambda)[0] - 0.5*(bletch+x[2]+lambda)[1] - 
+	(bletch+x[2]+lambda)[2] - 1.25*(bletch+x[2]+lambda)[3] - 
+	2*(bletch+x[2]+lambda)[4] - 3*(bletch+x[2]+lambda)[5] - 
+	(bletch+x[2]+lambda)[6] = 0;
+
+subject to (bletch+x[2]+sos2):
+	(bletch+x[2]+b)[1] + (bletch+x[2]+b)[2] + (bletch+x[2]+b)[3] + 
+	(bletch+x[2]+b)[4] + (bletch+x[2]+b)[5] + (bletch+x[2]+b)[6] = 1;
+
+subject to (bletch+x[2]+bound)[0]:
+	(bletch+x[2]+lambda)[0] - 1e+06*(bletch+x[2]+b)[1] <= 0;
+
+subject to (bletch+x[2]+bound)[1]:
+	(bletch+x[2]+lambda)[1] - (bletch+x[2]+b)[1] - (bletch+x[2]+b)[2] <= 0;
+
+subject to (bletch+x[2]+bound)[2]:
+	(bletch+x[2]+lambda)[2] - (bletch+x[2]+b)[2] - (bletch+x[2]+b)[3] <= 0;
+
+subject to (bletch+x[2]+bound)[3]:
+	(bletch+x[2]+lambda)[3] - (bletch+x[2]+b)[3] - (bletch+x[2]+b)[4] <= 0;
+
+subject to (bletch+x[2]+bound)[4]:
+	(bletch+x[2]+lambda)[4] - (bletch+x[2]+b)[4] - (bletch+x[2]+b)[5] <= 0;
+
+subject to (bletch+x[2]+bound)[5]:
+	(bletch+x[2]+lambda)[5] - (bletch+x[2]+b)[5] - (bletch+x[2]+b)[6] <= 0;
+
+subject to (bletch+x[2]+bound)[6]:
+	(bletch+x[2]+lambda)[6] - 1e+06*(bletch+x[2]+b)[6] <= 0;
+
+
+
+id:93
+subject to c3:
+	6*x >= 0;
+
+
+
+id:94
+Solution determined by presolve.
+
+
+id:95
+subject to c3:
+	-(c3+x+lambda)[0] + 0.5*(c3+x+lambda)[1] + 1.5*(c3+x+lambda)[2] + 
+	2.5*(c3+x+lambda)[3] + 7*(c3+x+lambda)[4] + 16*(c3+x+lambda)[5] + 
+	12*(c3+x+lambda)[6] >= 3;
+
+subject to (c3+x+cvx):
+	(c3+x+lambda)[1] + (c3+x+lambda)[2] + (c3+x+lambda)[3] + 
+	(c3+x+lambda)[4] + (c3+x+lambda)[5] = 1;
+
+subject to (c3+x+def):
+	x + (c3+x+lambda)[0] - 0.5*(c3+x+lambda)[1] - (c3+x+lambda)[2] - 
+	1.25*(c3+x+lambda)[3] - 2*(c3+x+lambda)[4] - 3*(c3+x+lambda)[5] - 
+	(c3+x+lambda)[6] = 0;
+
+subject to (c3+x+sos2):
+	(c3+x+b)[1] + (c3+x+b)[2] + (c3+x+b)[3] + (c3+x+b)[4] + (c3+x+b)[5] + 
+	(c3+x+b)[6] = 1;
+
+subject to (c3+x+bound)[0]:
+	(c3+x+lambda)[0] - 1e+06*(c3+x+b)[1] <= 0;
+
+subject to (c3+x+bound)[1]:
+	(c3+x+lambda)[1] - (c3+x+b)[1] - (c3+x+b)[2] <= 0;
+
+subject to (c3+x+bound)[2]:
+	(c3+x+lambda)[2] - (c3+x+b)[2] - (c3+x+b)[3] <= 0;
+
+subject to (c3+x+bound)[3]:
+	(c3+x+lambda)[3] - (c3+x+b)[3] - (c3+x+b)[4] <= 0;
+
+subject to (c3+x+bound)[4]:
+	(c3+x+lambda)[4] - (c3+x+b)[4] - (c3+x+b)[5] <= 0;
+
+subject to (c3+x+bound)[5]:
+	(c3+x+lambda)[5] - (c3+x+b)[5] - (c3+x+b)[6] <= 0;
+
+subject to (c3+x+bound)[6]:
+	(c3+x+lambda)[6] - 1e+06*(c3+x+b)[6] <= 0;
+
+
+
+id:96
+presolve, constraint c3:
+	no variables, but lower bound = 3, upper = Infinity
+Infeasible constraints determined by presolve.
+subject to c3:
+	0 >= 3;
+
+
+
+id:97
+subject to zot1:
+	8*(zot1+x+lambda)[0] + (zot1+x+lambda)[1] - 4*(zot1+x+lambda)[2] - 
+	7*(zot1+x+lambda)[3] - 12*(zot1+x+lambda)[4] <= 38;
+
+subject to zot2:
+	32*(zot2+x+s)[0] + 36*(zot2+x+s)[1] + 54*(zot2+x+s)[2] + 
+	108*(zot2+x+s)[3] <= 38;
+
+subject to (zot2+x+def):
+	x - (zot2+x+s)[0] - (zot2+x+s)[1] - (zot2+x+s)[2] - (zot2+x+s)[3] = 0;
+
+subject to (zot1+x+cvx):
+	(zot1+x+lambda)[1] + (zot1+x+lambda)[2] + (zot1+x+lambda)[3] = 1;
+
+subject to (zot1+x+def):
+	x + (zot1+x+lambda)[0] + 0.25*(zot1+x+lambda)[1] - (zot1+x+lambda)[2]
+	 - 1.5*(zot1+x+lambda)[3] - (zot1+x+lambda)[4] = 0;
+
+subject to (zot1+x+sos2):
+	(zot1+x+b)[1] + (zot1+x+b)[2] + (zot1+x+b)[3] + (zot1+x+b)[4] = 1;
+
+subject to (zot1+x+bound)[0]:
+	(zot1+x+lambda)[0] - 1e+06*(zot1+x+b)[1] <= 0;
+
+subject to (zot1+x+bound)[1]:
+	(zot1+x+lambda)[1] - (zot1+x+b)[1] - (zot1+x+b)[2] <= 0;
+
+subject to (zot1+x+bound)[2]:
+	(zot1+x+lambda)[2] - (zot1+x+b)[2] - (zot1+x+b)[3] <= 0;
+
+subject to (zot1+x+bound)[3]:
+	(zot1+x+lambda)[3] - (zot1+x+b)[3] - (zot1+x+b)[4] <= 0;
+
+subject to (zot1+x+bound)[4]:
+	(zot1+x+lambda)[4] - 1e+06*(zot1+x+b)[4] <= 0;
+
+
+
+id:98
+subject to zot1:
+	-2*(zot1+z+s)[0] - (zot1+z+s)[1] <= 38;
+
+subject to zot2:
+	8*(zot2+z+s)[0] + 9*(zot2+z+s)[1] <= 38;
+
+subject to (zot1+z+def):
+	3*x - (zot1+z+s)[0] - (zot1+z+s)[1] = 0;
+
+subject to (zot2+z+def):
+	3*x - (zot2+z+s)[0] - (zot2+z+s)[1] = 0;
+
+
+
+id:99
+presolve, constraint c3:
+	no variables, but lower bound = 29, upper = Infinity
+subject to c0a:
+	x[3] + x[4] + x[5] + x[6] + x[7] + x[8] + x[9] + x[10] + x[11] + 
+	(c0b+x[1]+s)[0] + (c0b+x[1]+s)[1] + (c0b+x[2]+s)[0] + (c0b+x[2]+s)[1]
+	 + (c0b+x[12]+s)[0] + (c0b+x[12]+s)[1] + (c0b+x[13]+s)[0] + 
+	(c0b+x[13]+s)[1] + (c0b+x[14]+s)[0] + (c0b+x[14]+s)[1] + 
+	(c0b+x[15]+s)[0] + (c0b+x[15]+s)[1] + (c0b+x[16]+s)[0] + 
+	(c0b+x[16]+s)[1] + (c0b+x[17]+s)[0] + (c0b+x[17]+s)[1] >= 1;
+
+subject to c0b:
+	(c0b+x[1]+s)[0] + 2*(c0b+x[1]+s)[1] + (c0b+x[2]+s)[0] + 
+	2*(c0b+x[2]+s)[1] + (c0b+x[3]+s)[0] + 2*(c0b+x[3]+s)[1] + 
+	(c0b+x[4]+s)[0] + 2*(c0b+x[4]+s)[1] + (c0b+x[5]+s)[0] + 
+	2*(c0b+x[5]+s)[1] + (c0b+x[6]+s)[0] + 2*(c0b+x[6]+s)[1] + 
+	(c0b+x[7]+s)[0] + 2*(c0b+x[7]+s)[1] + (c0b+x[8]+s)[0] + 
+	2*(c0b+x[8]+s)[1] + (c0b+x[9]+s)[0] + 2*(c0b+x[9]+s)[1] + 
+	(c0b+x[10]+s)[0] + 2*(c0b+x[10]+s)[1] + (c0b+x[11]+s)[0] + 
+	2*(c0b+x[11]+s)[1] + (c0b+x[12]+s)[0] + 2*(c0b+x[12]+s)[1] + 
+	(c0b+x[13]+s)[0] + 2*(c0b+x[13]+s)[1] + (c0b+x[14]+s)[0] + 
+	2*(c0b+x[14]+s)[1] + (c0b+x[15]+s)[0] + 2*(c0b+x[15]+s)[1] + 
+	(c0b+x[16]+s)[0] + 2*(c0b+x[16]+s)[1] + (c0b+x[17]+s)[0] + 
+	2*(c0b+x[17]+s)[1] <= 173;
+
+subject to c1:
+	x[3] + x[4] + x[5] + x[6] + x[7] + x[8] + x[9] + x[10] + x[11] + 
+	(c0b+x[1]+s)[0] + (c0b+x[1]+s)[1] + (c0b+x[2]+s)[0] + (c0b+x[2]+s)[1]
+	 + (c0b+x[12]+s)[0] + (c0b+x[12]+s)[1] + (c0b+x[13]+s)[0] + 
+	(c0b+x[13]+s)[1] + (c0b+x[14]+s)[0] + (c0b+x[14]+s)[1] + 
+	(c0b+x[15]+s)[0] + (c0b+x[15]+s)[1] + (c0b+x[16]+s)[0] + 
+	(c0b+x[16]+s)[1] + (c0b+x[17]+s)[0] + (c0b+x[17]+s)[1] >= 2;
+
+subject to c2:
+	6*x[4] <= 15;
+
+subject to c3:
+	0 >= 29;
+
+subject to c4:
+	-x[6] >= 31;
+
+subject to c5:
+	6*x[7] + (c5+x[7]+s)[0] + 2*(c5+x[7]+s)[1] <= 183;
+
+subject to c6:
+	(c6+x[8]+s)[0] + 2*(c6+x[8]+s)[1] + 4*(c6+x[8]+s)[2] + 6*(c6+x[8]+s)[3]
+	 + 9*(c6+x[8]+s)[4] + 12*(c6+x[8]+s)[5] <= 37;
+
+subject to c7:
+	x[9] + (c7+x[9]+s)[0] + 2*(c7+x[9]+s)[1] + 4*(c7+x[9]+s)[2] + 
+	6*(c7+x[9]+s)[3] + 9*(c7+x[9]+s)[4] + 12*(c7+x[9]+s)[5] <= 43;
+
+subject to c9:
+	2*(c9+x[11]+s)[0] + 3*(c9+x[11]+s)[1] + 6*(c9+x[11]+s)[2] + 
+	8*(c9+x[11]+s)[3] + 11*(c9+x[11]+s)[4] + 14*(c9+x[11]+s)[5] <= 129;
+
+subject to (c0b+x[3]+def):
+	x[3] - (c0b+x[3]+s)[0] - (c0b+x[3]+s)[1] = 0;
+
+subject to (c0b+x[4]+def):
+	x[4] - (c0b+x[4]+s)[0] - (c0b+x[4]+s)[1] = 0;
+
+subject to (c0b+x[5]+def):
+	x[5] - (c0b+x[5]+s)[0] - (c0b+x[5]+s)[1] = 0;
+
+subject to (c0b+x[6]+def):
+	x[6] - (c0b+x[6]+s)[0] - (c0b+x[6]+s)[1] = 0;
+
+subject to (c0b+x[7]+def):
+	x[7] - (c0b+x[7]+s)[0] - (c0b+x[7]+s)[1] = 0;
+
+subject to (c5+x[7]+def):
+	x[7] - (c5+x[7]+s)[0] - (c5+x[7]+s)[1] = 0;
+
+subject to (c0b+x[8]+def):
+	x[8] - (c0b+x[8]+s)[0] - (c0b+x[8]+s)[1] = 0;
+
+subject to (c6+x[8]+def):
+	x[8] - (c6+x[8]+s)[0] - (c6+x[8]+s)[1] - (c6+x[8]+s)[2] - 
+	(c6+x[8]+s)[3] - (c6+x[8]+s)[4] - (c6+x[8]+s)[5] = 0;
+
+subject to (c0b+x[9]+def):
+	x[9] - (c0b+x[9]+s)[0] - (c0b+x[9]+s)[1] = 0;
+
+subject to (c7+x[9]+def):
+	x[9] - (c7+x[9]+s)[0] - (c7+x[9]+s)[1] - (c7+x[9]+s)[2] - 
+	(c7+x[9]+s)[3] - (c7+x[9]+s)[4] - (c7+x[9]+s)[5] = 0;
+
+subject to (c0b+x[10]+def):
+	x[10] - (c0b+x[10]+s)[0] - (c0b+x[10]+s)[1] = 0;
+
+subject to (c0b+x[11]+def):
+	x[11] - (c0b+x[11]+s)[0] - (c0b+x[11]+s)[1] = 0;
+
+subject to (c9+x[11]+def):
+	x[11] - (c9+x[11]+s)[0] - (c9+x[11]+s)[1] - (c9+x[11]+s)[2] - 
+	(c9+x[11]+s)[3] - (c9+x[11]+s)[4] - (c9+x[11]+s)[5] = 0;
+
+
+
+id:100
+:   x     x.lb        x.ub      :=
+a   0   -Infinity   Infinity
+c   0   -Infinity   Infinity
+d   0   -Infinity   Infinity
+e   0   -Infinity   Infinity
+f   0   -Infinity   Infinity
+g   0   -Infinity   Infinity
+;
+
+minimize zot:
+	(-2.4 + x['c'])^2 + (-1.1 + x['e'])^2;
+
+:   x     x.lb        x.ub      :=
+c   0   -Infinity   Infinity
+e   0   -Infinity   Infinity
+g   0   -Infinity   Infinity
+;
+
+minimize zot:
+	(-2.4 + x['c'])^2 + (-1.1 + x['e'])^2;
+
+
+
+id:101
+:   x   y    :=
+1   1   1
+2   0   0
+;
+
+set {k in K: x[k] == 1}  := 1;
+
+set {k in K: y[k] == 1}  := 1;
+
+:   x   y    :=
+1   1   1
+2   1   1
+;
+
+set {k in K: x[k] == 1}  := 1 2;
+
+set {k in K: y[k] == 1}  := 1 2;
+
+
+
+id:102
+i = 1
+p = 1
+r = 1
+
+q [*] :=
+1    1
+2   11
+3    1
+4   11
+5    1
+6    1
+7  101
+8  101
+;
+
+i = 2
+p = 2
+r = 2
+
+q [*] :=
+1    2
+2   12
+3    2
+4   12
+5    2
+6    2
+7  102
+8  102
+;
+
+
+
+id:103
+C :=
+a a   15.35
+a b    9.28
+a c    9.03
+b a   20.04
+b b    6.96
+b c   22.11
+c a   10.19
+c c    7.48
+d a    7.92
+d c   17.27
+e a   29.72
+e b   12.18
+e c   16.34
+;
+
+
+
+id:104
+a 2
+b 1
+c 1
+d 0
+a 2
+b 1
+c 1
+d 0
+
+
+id:105
+i = 1
+zot = 30
+
+set 1 .. k := 1 2 3 4;
+
+1 1
+2 4
+3 9
+4 16
+i = 2
+zot = 5
+
+set 1 .. k := 1 2;
+
+1 1
+2 4
+
+
+id:106
+i = 1
+zot = 174
+_var[1] + _var[2] = 14
+
+_var[1] + _var[2] = 24
+
+_var[1] = 16
+
+i = 2
+zot = 25
+_var[1] + _var[2] = 10
+
+_var[1] + _var[2] = 20
+
+_var[1] = 14
+
+
+
+id:107
+Solution determined by presolve;
+objective o = -8.
+x = 4
+y = 7
+o = -8
+
+
+
+id:108
+MINOS 5.51: optimal solution found.
+XXX iterations, objective -3
+o = -3
+x = 4
+y = 7
+
+
+
+id:109
+p [*] :=
+1  123
+2  456
+;
+
+
+
+id:110
+p [*] :=
+1  123
+2  456
+;
+
+
+
+id:111
+p [*] :=
+1  123
+2  234
+3  456
+4  345
+;
+
+
+
+id:112
+p :=
+1 a   11
+1 b   12
+1 c   13
+2 c   23
+2 a   21
+2 b   22
+3 b   32
+3 c   33
+3 a   31
+;
+
+
+
+id:113
+i = a
+
+end of loop with i = a
+i = b
+
+if p[i] is true
+p[i] = 1
+
+end of loop with i = b
+i = c
+
+end of loop with i = c
+i = d
+
+if p[i] is true
+p[i] = 1
+
+end of loop with i = d
+loop done
+
+
+id:114
+i = 1
+
+i = 2
+
+:    p   r     :=
+P1   3   31
+P2   4   32
+a    1    .
+c    3    .
+x    .   11
+y    .   12
+;
+
+
+
+id:115
+r :=
+1 1   2
+1 2   3
+3 1   4
+3 2   5
+3 3   6
+3 4   7
+;
+
+
+
+id:116
+set N := 1 2 3 4;
+
+set R[1] := ; # empty
+set R[2] := 1;
+set R[3] := 2 1;
+set R[4] := 3 2 1;
+
+
+
+id:117
+Error executing "print" command:
+	Can't invoke unavailable function kth.
+Error executing "print" command:
+	Can't invoke unavailable function kth.
+
+
+id:118
+:   p   q   r     :=
+a   1   2    3
+b   3   5    8
+c   4   7   11
+;
+
+:   p    q      r      :=
+a   1    2.5    3.5
+b   3    4      7
+c   4   23     27
+;
+
+
+
+id:119
+wantsol=1
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 1
+Nonlin evals: obj = 7, grad = 6.
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 1
+Nonlin evals: obj = 7, grad = 6.
+x = 3
+y = 3
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 9
+Nonlin evals: obj = 6, grad = 5.
+x = 1
+y = 1
+
+SNOPT 7.5-1.2 : Optimal solution found.
+XXX iterations, objective 0
+x = 4
+y = 4
+
+SNOPT 7.5-1.2 : Optimal solution found.
+XXX iterations, objective 1
+x = 3
+y = 3
+
+option solver snopt;
+option solver minos;
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 4
+Nonlin evals: obj = 6, grad = 5.
+x = 2
+y = 2
+
+objective o;
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 4
+Nonlin evals: obj = 3, grad = 2.
+x = 2
+y = 2
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 16
+Nonlin evals: obj = 6, grad = 5.
+x = 2.71051e-20
+y = 0
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 1
+Nonlin evals: obj = 7, grad = 6.
+x = 3
+y = 3
+
+k = 1
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 1
+Nonlin evals: obj = 3, grad = 2.
+x = 3
+y = 3
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 9
+Nonlin evals: obj = 6, grad = 5.
+x = 1
+y = 1
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 1
+Nonlin evals: obj = 8, grad = 7.
+x = 3
+y = 3
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 1
+Nonlin evals: obj = 3, grad = 2.
+x = 3
+y = 3
+
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 1
+Nonlin evals: obj = 3, grad = 2.
+x = 3
+y = 3
+
+var x;
+subject to yb: y <= 3;
+# 2 entities depend on x:
+Initial
+o
+
+SNOPT 7.5-1.2 : Optimal solution found.
+XXX iterations, objective 1
+environ foo;
+option solver minos;
+cat('text output') = '>>text output<<'
+cat('5') = '>>5<<'
+
+cat(6) = '>>6<<'
+
+cat(47) = '>>47<<'
+
+Error executing "display" command:
+	Can't invoke unavailable function ncall.
+
+
+id:120
+x0 = 1
+x1 = 1
+x2 = 1
+
+
+
+id:121
+param p{i in 1 .. 3}  :=  if i == 1 then 0 else p[i - 1] + 1;
+p [*] :=
+1  0
+2  1
+3  2
+;
+
+param p{i in 1 .. 3}  :=  if i == 1 then 0 else p[i - 1] + 1;
+
+
+id:122
+param p{i in 1 .. 3}  =  if i == 1 then 0 else p[i - 1] + 1;
+p [*] :=
+1  0
+2  1
+3  2
+;
+
+param p{i in 1 .. 3}  =  if i == 1 then 0 else p[i - 1] + 1;
+
+
+id:123
+param p{i in 1 .. 3}  =  if i == 1 then 0 else p[i - 1] + 1;
+p [*] :=
+1  0
+2  1
+3  2
+;
+
+param p{i in 1 .. 3}  =  if i == 1 then 0 else p[i - 1] + 1;
+
+
+id:124
+
+1 index for set of dimen 2
+context:  var x{i in {(1, 2), (3, 'abc' >>> )}} <<<  >= i;
+Omitted line
+MINOS 5.51: optimal solution found.
+XXX iterations, objective 10
+Nonlin evals: obj = 3, grad = 2.
+x :=
+1 2     1
+3 abc   3
+;
+
