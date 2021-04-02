@@ -31,8 +31,14 @@ jobs:
             brew install bash
             brew install gnu-sed 
 
+      - name: Install dos2unix on Ubuntu
+        if: runner.os == 'ubuntu'
+        run: |
+            sudo apt install dos2unix
+
       - name: Run tests
         run: |
+            which dos2unix
             cd azure
             ./prep_xpl_tests.sh -d artifacts/ -v
             ./run_xpl_tests.sh -d artifacts/ -s 10000 -v
