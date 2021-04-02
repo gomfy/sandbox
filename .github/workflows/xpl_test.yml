@@ -40,6 +40,5 @@ jobs:
         run: |
             which dos2unix
             cd azure
-            ./prep_xpl_tests.sh -d artifacts/ -v
-            ./run_xpl_tests.sh -d artifacts/ -s 10000 -v
+            ./adjust_line_ending.sh
         shell: bash {0}
