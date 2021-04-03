@@ -26,19 +26,22 @@ jobs:
         uses: actions/checkout@v2
     
       - name: Install bash on MacOS
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS-latest'
         run: |
             brew install bash
             brew install gnu-sed 
 
       - name: Install dos2unix on Ubuntu
-        if: runner.os == 'ubuntu'
+        if: runner.os == 'ubuntu-20.04'
         run: |
             sudo apt install dos2unix
 
       - name: Run tests
         run: |
-            which dos2unix
+            which dos2unix 
+            which tr
             cd azure
             ./adjust_line_ending.sh
+            tr --version
+            dos2unix --version
         shell: bash {0}
