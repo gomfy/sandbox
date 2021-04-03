@@ -26,13 +26,13 @@ jobs:
         uses: actions/checkout@v2
     
       - name: Install bash on MacOS
-        if: runner.os == 'macOS-latest'
+        if: runner.os == 'macOS'
         run: |
             brew install bash
             brew install gnu-sed 
 
       - name: Install dos2unix on Ubuntu
-        if: runner.os == 'ubuntu-20.04'
+        if: runner.os == 'Linux'
         run: |
             sudo apt install dos2unix
 
