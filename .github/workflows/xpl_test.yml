@@ -25,23 +25,21 @@ jobs:
       - name: Setup actions checkout
         uses: actions/checkout@v2
     
-      - name: Install bash on MacOS
-        if: runner.os == 'macOS'
-        run: |
-            brew install bash
-            brew install gnu-sed 
-
-      - name: Install dos2unix on Ubuntu
-        if: runner.os == 'Linux'
-        run: |
-            sudo apt install dos2unix
+        #      - name: Install bash on MacOS
+        #        if: runner.os == 'macOS'
+        #        run: |
+        #            brew install bash
+        #            brew install gnu-sed 
+        #
+        #      - name: Install dos2unix on Ubuntu
+        #        if: runner.os == 'Linux'
+        #        run: |
+        #            sudo apt install dos2unix
 
       - name: Run tests
         run: |
-            which dos2unix 
-            which tr
+            mkdir copydir
             cd azure
-            ./adjust_line_ending.sh
-            tr --version
-            dos2unix --version
+            cp ./* ../copydir
+            ls -l ../copydir
         shell: bash {0}
