@@ -38,11 +38,6 @@ jobs:
 
       - name: Run tests
         run: |
-            cd getopts/
-            ./mygetopts.sh exec25 -fake --aa aarg exec1 -s -c c1 c2 -u -k
-            ./mygetopts.sh exec25 --fake
-            ./mygetopts.sh exec25 ----fake ---aa aarg exec1 --s -c c1 c2 c3fake -u -k -aa-: flag
-            ./mygetopts.sh -a -a: -?/@! arg
-            ./mygetopts.sh -c c1 -u -a arga -k
-            ./mygetopts.sh -c -c -c -c -c
+            cd path_conversion/
+            ./converting_paths.sh
         shell: bash {0}
