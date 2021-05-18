@@ -36,10 +36,20 @@ jobs:
         #        run: |
         #            sudo apt install dos2unix
 
+      - name: Install AMPL
+        run: |
+            if [ "$RUNNER_OS" == 'Linux' ]; then
+                ampl/baseline_scripts.sh linux-intel64
+            elif [ "$RUNNER_OS" == 'Windows' ]; then
+                ampl/baseline_scripts.sh mswin64
+            elif [ "$RUNNER_OS" == 'macOS' ]; then 
+                ampl/baseline_scripts.sh macos64
+            else
+                echo "$RUNNER_OS not supported"
+                exit 1
+            fi
       - name: Run tests
         run: |
-            mkdir copydir
-            cd azure
-            cp ./* ../copydir
-            ls -l ../copydir
+            cd ampl/test_scripts
+            ampl-baseline disappear.run
         shell: bash {0}

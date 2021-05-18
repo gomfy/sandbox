@@ -1,0 +1,7 @@
+model dietobj.mod;
+data dietobj.dat;
+solve;
+write gtmp;
+#objective total_number;
+solve;
+
