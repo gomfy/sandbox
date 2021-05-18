@@ -35,31 +35,37 @@ jobs:
         #        if: runner.os == 'Linux'
         #        run: |
         #            sudo apt install dos2unix
+        #
+      
+      - name: Create dir
+        run: |
+            mkdir ampl
+        shell: bash
 
       - name: Install AMPL (Linux)
         if: runner.os == 'Linux'
         run: |
             pwd
-            ./ampl/scripts/prepare_baseline.sh linux-intel64
+            ./scripts/prepare_baseline.sh linux-intel64
         shell: bash
 
       - name: Install AMPL (macOS)
         if: runner.os == 'macOS'
         run: |
             pwd
-            ./ampl/scripts/prepare_baseline.sh macos64
+            ./scripts/prepare_baseline.sh macos64
         shell: bash
 
       - name: Install AMPL (Windows)
         if: runner.os == 'Windows'
         run: |
             pwd
-            ./ampl/scripts/prepare_baseline.sh mswin64
+            ./scripts/prepare_baseline.sh mswin64
         shell: bash
 
       - name: Run tests
         run: |
             pwd
-            cd ampl/test_scripts
+            cd ampl_dir/test_scripts
             ampl-baseline disappear.run
         shell: bash
