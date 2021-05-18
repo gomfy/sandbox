@@ -39,19 +39,19 @@ jobs:
       - name: Install AMPL (Linux)
         if: runner.os == 'Linux'
         run: |
-            ./ampl/baseline_scripts.sh linux-intel64
+            ./ampl/scripts/prepare_baseline.sh linux-intel64
         shell: bash{0}
 
       - name: Install AMPL (macOS)
         if: runner.os == 'macOS'
         run: |
-            ./ampl/baseline_scripts.sh macos64
+            ./ampl/scripts/prepare_baseline.sh macos64
         shell: bash{0}
 
       - name: Install AMPL (Windows)
         if: runner.os == 'Windows'
         run: |
-            ./ampl/baseline_scripts.sh mswin64
+            ./ampl/scripts/prepare_baseline.sh mswin64
         shell: bash{0}
 
       - name: Run tests
