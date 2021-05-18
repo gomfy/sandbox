@@ -36,18 +36,24 @@ jobs:
         #        run: |
         #            sudo apt install dos2unix
 
-      - name: Install AMPL
+      - name: Install AMPL (Linux)
+        if: runner.os == 'Linux'
         run: |
-            if [ "$RUNNER_OS" == 'Linux' ]; then
-                ampl/baseline_scripts.sh linux-intel64
-            elif [ "$RUNNER_OS" == 'Windows' ]; then
-                ampl/baseline_scripts.sh mswin64
-            elif [ "$RUNNER_OS" == 'macOS' ]; then 
-                ampl/baseline_scripts.sh macos64
-            else
-                echo "$RUNNER_OS not supported"
-                exit 1
-            fi
+            ./ampl/baseline_scripts.sh linux-intel64
+        shell: bash{0}
+
+      - name: Install AMPL (macOS)
+        if: runner.os == 'macOS'
+        run: |
+            ./ampl/baseline_scripts.sh macos64
+        shell: bash{0}
+
+      - name: Install AMPL (Windows)
+        if: runner.os == 'Windows'
+        run: |
+            ./ampl/baseline_scripts.sh mswin64
+        shell: bash{0}
+
       - name: Run tests
         run: |
             cd ampl/test_scripts
