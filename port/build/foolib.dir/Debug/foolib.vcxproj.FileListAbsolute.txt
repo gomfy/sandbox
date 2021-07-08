@@ -1,0 +1,2 @@
+C:\Users\matya\sandbox\git\port\build\foolib.dir\Debug\foolib.lib
+C:\Users\matya\sandbox\git\port\build\foolib.dir\Debug\foolib.pdb

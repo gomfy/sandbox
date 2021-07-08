@@ -1,0 +1,10 @@
+^C:\USERS\MATYA\SANDBOX\GIT\PORT\BUILD\CMAKEFILES\9B5A05F891CAB0D7AA8FECD6542F51A2\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/matya/sandbox/git/port -BC:/Users/matya/sandbox/git/port/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/matya/sandbox/git/port/build/port.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

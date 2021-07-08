@@ -1,0 +1,5 @@
+C:/Users/matya/sandbox/git/port/build/CMakeFiles/ol.dir
+C:/Users/matya/sandbox/git/port/build/CMakeFiles/foolib.dir
+C:/Users/matya/sandbox/git/port/build/CMakeFiles/nol.dir
+C:/Users/matya/sandbox/git/port/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/matya/sandbox/git/port/build/CMakeFiles/ZERO_CHECK.dir
